@@ -1,0 +1,262 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../supabase';
+import { Globe, Mail, Lock, User, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
+
+function StarField() {
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden" style={{ background: 'linear-gradient(135deg, #020817 0%, #050c1f 50%, #030a18 100%)' }}>
+      {Array.from({ length: 60 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white"
+          style={{
+            width: Math.random() * 2 + 0.5 + 'px',
+            height: Math.random() * 2 + 0.5 + 'px',
+            top: Math.random() * 100 + '%',
+            left: Math.random() * 100 + '%',
+            opacity: Math.random() * 0.6 + 0.1,
+            animation: `pulse ${Math.random() * 4 + 3}s ease-in-out infinite`,
+            animationDelay: Math.random() * 4 + 's',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  const [mode, setMode] = useState('login'); // 'login' | 'signup'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name } },
+        });
+        if (error) throw error;
+        setSuccess('Account created! Check your email to confirm, then log in.');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        // Auth state change in App.jsx will navigate automatically
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setMode(m => m === 'login' ? 'signup' : 'login');
+    setError('');
+    setSuccess('');
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden text-white font-sans">
+      <StarField />
+
+      {/* Glow blobs */}
+      <motion.div
+        className="absolute w-96 h-96 rounded-full bg-blue-700/20 blur-3xl pointer-events-none"
+        animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ top: '-10%', left: '-10%' }}
+      />
+      <motion.div
+        className="absolute w-80 h-80 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        style={{ bottom: '-5%', right: '-5%' }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+        className="relative w-full max-w-md mx-4"
+      >
+        {/* Card */}
+        <div className="relative bg-slate-900/80 backdrop-blur-2xl border border-white/8 rounded-3xl shadow-[0_30px_80px_rgba(0,0,0,0.8)] overflow-hidden">
+          {/* Top gradient bar */}
+          <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500" />
+
+          <div className="p-8">
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-blue-500 blur-md opacity-40 rounded-xl" />
+                <div className="relative p-2 bg-slate-800 border border-slate-700/60 rounded-xl">
+                  <Globe className="w-5 h-5 text-blue-400" />
+                </div>
+              </div>
+              <span className="text-xl font-black tracking-tighter">
+                PREDICTIFI<span className="text-blue-500">.AI</span>
+              </span>
+            </div>
+
+            {/* Title */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mode}
+                initial={{ opacity: 0, x: mode === 'login' ? -20 : 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: mode === 'login' ? 20 : -20 }}
+                transition={{ duration: 0.25 }}
+                className="mb-7"
+              >
+                <h1 className="text-3xl font-black tracking-tighter mb-1">
+                  {mode === 'login' ? 'Welcome back' : 'Create account'}
+                </h1>
+                <p className="text-slate-400 text-sm">
+                  {mode === 'login'
+                    ? 'Sign in to access your prediction terminal'
+                    : 'Join the neural prediction network'}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Alerts */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="mb-5 flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm"
+                >
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>{error}</span>
+                </motion.div>
+              )}
+              {success && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="mb-5 flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm"
+                >
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>{success}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <AnimatePresence>
+                {mode === 'signup' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}
+                    className="overflow-hidden"
+                  >
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.18em] mb-1.5">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        required={mode === 'signup'}
+                        placeholder="John Doe"
+                        className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.18em] mb-1.5">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    placeholder="you@example.com"
+                    className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.18em] mb-1.5">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    placeholder="Min. 6 characters"
+                    className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-12 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(v => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  >
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                className="w-full mt-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm uppercase tracking-[0.18em] rounded-xl transition-all shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] border border-white/10 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                ) : (
+                  <>
+                    {mode === 'login' ? 'Sign In' : 'Create Account'}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </motion.button>
+            </form>
+
+            {/* Toggle */}
+            <div className="mt-6 text-center text-sm text-slate-500">
+              {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+              <button
+                onClick={toggleMode}
+                className="text-blue-400 font-bold hover:text-blue-300 transition-colors"
+              >
+                {mode === 'login' ? 'Sign up' : 'Sign in'}
+              </button>
+            </div>
+
+            {/* Badge */}
+            <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-center gap-2 text-[10px] text-slate-600 uppercase tracking-widest">
+              <Zap className="w-3 h-3 text-slate-700" />
+              Secured by Supabase Auth
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

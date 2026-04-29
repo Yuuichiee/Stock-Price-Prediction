@@ -1,0 +1,11 @@
+{
+  "name": "stock-price-prediction",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "postinstall": "npm ci --prefix frontend"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+import Layout from './components/Layout';
+import Terminals from './pages/Terminals';
+import NeuralNet from './pages/NeuralNet';
+import Markets from './pages/Markets';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function LoadingScreen() {
@@ -18,20 +23,18 @@ function LoadingScreen() {
 }
 
 export default function App() {
-  const [session, setSession] = useState(undefined); // undefined = loading
+  const [session, setSession] = useState(undefined);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         setSession(session);
       })
       .catch((err) => {
         console.error("Supabase auth error:", err);
-        setSession(null); // Prevents infinite loading screen if offline or blocked
+        setSession(null);
       });
 
-    // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -39,32 +42,35 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Still loading
   if (session === undefined) return <LoadingScreen />;
 
   return (
-    <AnimatePresence mode="wait">
-      {session ? (
-        <motion.div
-          key="dashboard"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Dashboard user={session.user} />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="login"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <LoginPage />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Router>
+      <AnimatePresence mode="wait">
+        {session ? (
+          <Routes key="authenticated">
+            <Route element={<Layout user={session.user} />}>
+              <Route path="/" element={
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <Dashboard user={session.user} />
+                </motion.div>
+              } />
+              <Route path="/terminals" element={<Terminals />} />
+              <Route path="/neural-net" element={<NeuralNet />} />
+              <Route path="/markets" element={<Markets />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        ) : (
+          <Routes key="unauthenticated">
+            <Route path="*" element={
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <LoginPage />
+              </motion.div>
+            } />
+          </Routes>
+        )}
+      </AnimatePresence>
+    </Router>
   );
 }

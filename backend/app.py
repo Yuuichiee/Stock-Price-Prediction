@@ -5,6 +5,13 @@ import model_utils
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        "status": "online",
+        "message": "Predictifi.AI Backend is running!"
+    })
+
 POPULAR_STOCKS = [
     {"symbol": "AAPL", "name": "Apple Inc."},
     {"symbol": "MSFT", "name": "Microsoft Corp."},

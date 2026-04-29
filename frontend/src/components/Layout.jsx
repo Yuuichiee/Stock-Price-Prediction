@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Activity, Globe, LogOut } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { Activity, Globe, LogOut, Menu, X } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 import { supabase } from '../supabase';
 
@@ -117,7 +117,7 @@ function StarField() {
 
 export function FloatingOrb({ className, style }) {
   return (
-    <motion.div
+    <Motion.div
       className={`absolute rounded-full blur-3xl pointer-events-none ${className}`}
       style={style}
       animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
@@ -126,26 +126,33 @@ export function FloatingOrb({ className, style }) {
   );
 }
 
+const TICKER_COPIES = 4;
+const TICKER_DATA = [
+  { sym: 'S&P 500',   base: 5023.14  },
+  { sym: 'NASDAQ',    base: 15990.11 },
+  { sym: 'DOW JONES', base: 38671.69 },
+  { sym: 'VIX',       base: 13.41    },
+  { sym: 'BITCOIN',   base: 51432.00 },
+  { sym: 'GOLD',      base: 2024.10  },
+];
+
+const NAV_ITEMS = [
+  { name: 'Terminals', path: '/terminals' },
+  { name: 'Neural Net', path: '/neural-net' },
+  { name: 'Markets', path: '/markets' },
+];
+
 function LiveTicker() {
-  const COPIES = 4;
-  const baseData = [
-    { sym: 'S&P 500',   base: 5023.14  },
-    { sym: 'NASDAQ',    base: 15990.11 },
-    { sym: 'DOW JONES', base: 38671.69 },
-    { sym: 'VIX',       base: 13.41    },
-    { sym: 'BITCOIN',   base: 51432.00 },
-    { sym: 'GOLD',      base: 2024.10  },
-  ];
 
   const valRefs    = useRef([]);
   const changeRefs = useRef([]);
 
   useEffect(() => {
-    const current = baseData.map(d => d.base);
-    const targets  = baseData.map(d => d.base);
+    const current = TICKER_DATA.map(d => d.base);
+    const targets  = TICKER_DATA.map(d => d.base);
 
     const targetInterval = setInterval(() => {
-      baseData.forEach((d, i) => {
+      TICKER_DATA.forEach((d, i) => {
         const delta = d.base * (Math.random() * 0.006 - 0.003);
         targets[i] = +(targets[i] + delta).toFixed(2);
       });
@@ -158,7 +165,7 @@ function LiveTicker() {
     const tick = (timestamp) => {
       if (timestamp - lastTick >= TICK_INTERVAL) {
         lastTick = timestamp;
-        baseData.forEach((d, i) => {
+        TICKER_DATA.forEach((d, i) => {
           current[i] += (targets[i] - current[i]) * 0.18;
 
           const formatted = current[i].toLocaleString('en-US', {
@@ -170,8 +177,8 @@ function LiveTicker() {
             ? 'text-emerald-400 tabular-nums'
             : 'text-red-400 tabular-nums';
 
-          for (let copy = 0; copy < COPIES; copy++) {
-            const idx = copy * baseData.length + i;
+          for (let copy = 0; copy < TICKER_COPIES; copy++) {
+            const idx = copy * TICKER_DATA.length + i;
             if (valRefs.current[idx])    valRefs.current[idx].textContent = formatted;
             if (changeRefs.current[idx]) {
               changeRefs.current[idx].textContent = changeStr;
@@ -194,9 +201,9 @@ function LiveTicker() {
       </div>
       <div className="overflow-hidden flex-1 relative">
         <div className="animate-marquee flex gap-12 whitespace-nowrap">
-          {[...Array(COPIES)].map((_, ai) =>
-            baseData.map((d, i) => {
-              const refIdx = ai * baseData.length + i;
+          {[...Array(TICKER_COPIES)].map((_, ai) =>
+            TICKER_DATA.map((d, i) => {
+              const refIdx = ai * TICKER_DATA.length + i;
               return (
                 <span key={`${ai}-${i}`} className="inline-flex items-center gap-3 text-xs font-mono font-bold">
                   <span className="text-slate-400">{d.sym}</span>
@@ -224,6 +231,7 @@ function LiveTicker() {
 
 export default function Layout({ user }) {
   const spotlightRef = useRef(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handle = (e) => {
@@ -248,40 +256,36 @@ export default function Layout({ user }) {
 
       <LiveTicker />
 
-      <motion.header
+      <Motion.header
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.1 }}
         className="sticky top-0 z-40 bg-[#050c1f]/80 backdrop-blur-xl border-b border-white/5"
       >
-        <div className="w-full max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
-          <Link to="/">
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="flex items-center gap-3 cursor-pointer group">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+          <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+            <Motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-500 blur-md opacity-30 group-hover:opacity-70 transition-opacity rounded-xl" />
-                <div className="relative p-2 bg-slate-800/80 border border-slate-700/60 rounded-xl">
-                  <Globe className="w-5 h-5 text-blue-400" />
+                <div className="relative p-2 bg-slate-800/80 border border-slate-700/60 rounded-lg">
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                 </div>
               </div>
-              <span className="text-xl font-black tracking-tighter text-white">
+              <span className="text-base sm:text-xl font-black tracking-tighter text-white">
                 PREDICTIFI<span className="text-blue-500">.AI</span>
               </span>
-            </motion.div>
+            </Motion.div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.18em]">
-            {[
-              { name: 'Terminals', path: '/terminals' },
-              { name: 'Neural Net', path: '/neural-net' },
-              { name: 'Markets', path: '/markets' },
-            ].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link key={item.name} to={item.path}>
-                <motion.span
+                <Motion.span
                   className="hover:text-white transition-colors cursor-pointer"
                   whileHover={{ y: -1 }}
                 >
                   {item.name}
-                </motion.span>
+                </Motion.span>
               </Link>
             ))}
             <div className="flex items-center gap-3">
@@ -291,18 +295,62 @@ export default function Layout({ user }) {
                 </div>
                 <span className="text-xs text-slate-300 font-mono max-w-[120px] truncate">{user?.email}</span>
               </div>
-              <motion.button
+              <Motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => supabase.auth.signOut()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 text-xs font-bold tracking-wider transition-all"
               >
                 <LogOut className="w-3.5 h-3.5" /> Sign out
-              </motion.button>
+              </Motion.button>
             </div>
           </nav>
+
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(open => !open)}
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-slate-900/70 text-slate-200"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-      </motion.header>
+
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <Motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden border-t border-white/5 bg-[#050c1f]/95 backdrop-blur-xl"
+            >
+              <div className="px-4 py-4 space-y-3">
+                {NAV_ITEMS.map(item => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block rounded-lg border border-white/8 bg-white/5 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-slate-200"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-white/8 bg-slate-900/70 px-4 py-3">
+                  <span className="min-w-0 truncate text-xs font-mono text-slate-300">{user?.email}</span>
+                  <button
+                    type="button"
+                    onClick={() => supabase.auth.signOut()}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-300"
+                  >
+                    <LogOut className="h-3.5 w-3.5" /> Sign out
+                  </button>
+                </div>
+              </div>
+            </Motion.div>
+          )}
+        </AnimatePresence>
+      </Motion.header>
 
       <div className="flex-1 relative z-10 w-full max-w-7xl mx-auto">
          <Outlet />

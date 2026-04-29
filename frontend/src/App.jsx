@@ -7,13 +7,13 @@ import Layout from './components/Layout';
 import Terminals from './pages/Terminals';
 import NeuralNet from './pages/NeuralNet';
 import Markets from './pages/Markets';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center"
       style={{ background: 'linear-gradient(135deg, #020817, #050c1f)' }}>
-      <motion.div
+      <Motion.div
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
         className="w-12 h-12 rounded-full border-2 border-t-blue-500 border-slate-700"
@@ -51,9 +51,9 @@ export default function App() {
           <Routes key="authenticated">
             <Route element={<Layout user={session.user} />}>
               <Route path="/" element={
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <Dashboard user={session.user} />
-                </motion.div>
+                </Motion.div>
               } />
               <Route path="/terminals" element={<Terminals />} />
               <Route path="/neural-net" element={<NeuralNet />} />
@@ -64,9 +64,9 @@ export default function App() {
         ) : (
           <Routes key="unauthenticated">
             <Route path="*" element={
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <LoginPage />
-              </motion.div>
+              </Motion.div>
             } />
           </Routes>
         )}

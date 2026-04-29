@@ -1,12 +1,12 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Terminal, Activity, Zap } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 
 export default function Terminals() {
   return (
     <div className="w-full max-w-7xl mx-auto px-6 lg:px-8 py-12 relative z-10 flex flex-col items-center justify-center min-h-[70vh]">
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
@@ -35,7 +35,7 @@ export default function Terminals() {
             </div>
           </div>
         </Tilt>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import React from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -46,10 +45,18 @@ export default function StockChart({ historical, predictions }) {
   // Sort chronologically
   const chartData = Array.from(dataMap.values()).sort((a, b) => new Date(a.Date) - new Date(b.Date));
 
+  if (chartData.length === 0) {
+    return (
+      <div className="flex h-[320px] sm:h-96 w-full items-center justify-center rounded-lg border border-slate-700 bg-slate-800 p-4 text-center text-sm font-bold text-slate-500">
+        No chart data available.
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-96 p-4 bg-slate-800 rounded-xl shadow-lg border border-slate-700">
+    <div className="w-full h-[320px] sm:h-96 p-2 sm:p-4 bg-slate-800 rounded-lg shadow-lg border border-slate-700">
         <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <ComposedChart data={chartData} margin={{ top: 16, right: 8, bottom: 10, left: 0 }}>
                 <defs>
                   <linearGradient id="colorHist" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -64,22 +71,25 @@ export default function StockChart({ historical, predictions }) {
                 <XAxis 
                   dataKey="Date" 
                   stroke="#94a3b8" 
-                  tick={{fill: '#94a3b8', fontSize: 12}} 
+                  tick={{fill: '#94a3b8', fontSize: 10}} 
                   tickMargin={10}
-                  minTickGap={30}
+                  minTickGap={22}
+                  tickFormatter={(value) => String(value).slice(5)}
                 />
                 <YAxis 
                   stroke="#94a3b8" 
-                  tick={{fill: '#94a3b8', fontSize: 12}} 
-                  tickMargin={10}
+                  tick={{fill: '#94a3b8', fontSize: 10}} 
+                  tickMargin={6}
+                  width={46}
                   domain={['auto', 'auto']}
-                  tickFormatter={(value) => `$${value.toFixed(0)}`}
+                  tickFormatter={(value) => `$${Number(value).toFixed(0)}`}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
                   itemStyle={{ color: '#f8fafc' }}
+                  labelFormatter={(value) => `Date: ${value}`}
                 />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
                 
                 <Area type="monotone" dataKey="Historical" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorHist)" activeDot={{r: 6}} />
                 <Area type="monotone" dataKey="Predicted" stroke="#10b981" strokeWidth={3} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorPred)" activeDot={{r: 6}} />

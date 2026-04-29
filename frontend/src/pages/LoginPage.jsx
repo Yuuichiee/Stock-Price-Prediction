@@ -1,23 +1,38 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabase';
 import { Globe, Mail, Lock, User, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
+
+const seededRandom = (seed) => {
+  const value = Math.sin(seed) * 10000;
+  return value - Math.floor(value);
+};
+
+const LOGIN_STARS = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  size: seededRandom(i + 1) * 2 + 0.5,
+  top: seededRandom(i + 101) * 100,
+  left: seededRandom(i + 201) * 100,
+  opacity: seededRandom(i + 301) * 0.6 + 0.1,
+  duration: seededRandom(i + 401) * 4 + 3,
+  delay: seededRandom(i + 501) * 4,
+}));
 
 function StarField() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden" style={{ background: 'linear-gradient(135deg, #020817 0%, #050c1f 50%, #030a18 100%)' }}>
-      {Array.from({ length: 60 }).map((_, i) => (
+      {LOGIN_STARS.map(star => (
         <div
-          key={i}
+          key={star.id}
           className="absolute rounded-full bg-white"
           style={{
-            width: Math.random() * 2 + 0.5 + 'px',
-            height: Math.random() * 2 + 0.5 + 'px',
-            top: Math.random() * 100 + '%',
-            left: Math.random() * 100 + '%',
-            opacity: Math.random() * 0.6 + 0.1,
-            animation: `pulse ${Math.random() * 4 + 3}s ease-in-out infinite`,
-            animationDelay: Math.random() * 4 + 's',
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            top: `${star.top}%`,
+            left: `${star.left}%`,
+            opacity: star.opacity,
+            animation: `pulse ${star.duration}s ease-in-out infinite`,
+            animationDelay: `${star.delay}s`,
           }}
         />
       ))}
@@ -69,35 +84,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden text-white font-sans">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden text-white font-sans px-4 py-8">
       <StarField />
 
       {/* Glow blobs */}
-      <motion.div
-        className="absolute w-96 h-96 rounded-full bg-blue-700/20 blur-3xl pointer-events-none"
+      <Motion.div
+        className="absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-blue-700/20 blur-3xl pointer-events-none"
         animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
         style={{ top: '-10%', left: '-10%' }}
       />
-      <motion.div
-        className="absolute w-80 h-80 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none"
+      <Motion.div
+        className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none"
         animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
         transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
         style={{ bottom: '-5%', right: '-5%' }}
       />
 
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-        className="relative w-full max-w-md mx-4"
+        className="relative w-full max-w-md"
       >
         {/* Card */}
-        <div className="relative bg-slate-900/80 backdrop-blur-2xl border border-white/8 rounded-3xl shadow-[0_30px_80px_rgba(0,0,0,0.8)] overflow-hidden">
+        <div className="relative bg-slate-900/80 backdrop-blur-2xl border border-white/8 rounded-xl sm:rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.8)] overflow-hidden">
           {/* Top gradient bar */}
           <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500" />
 
-          <div className="p-8">
+          <div className="p-5 sm:p-8">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
               <div className="relative">
@@ -113,7 +128,7 @@ export default function LoginPage() {
 
             {/* Title */}
             <AnimatePresence mode="wait">
-              <motion.div
+              <Motion.div
                 key={mode}
                 initial={{ opacity: 0, x: mode === 'login' ? -20 : 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -121,7 +136,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.25 }}
                 className="mb-7"
               >
-                <h1 className="text-3xl font-black tracking-tighter mb-1">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tighter mb-1">
                   {mode === 'login' ? 'Welcome back' : 'Create account'}
                 </h1>
                 <p className="text-slate-400 text-sm">
@@ -129,28 +144,28 @@ export default function LoginPage() {
                     ? 'Sign in to access your prediction terminal'
                     : 'Join the neural prediction network'}
                 </p>
-              </motion.div>
+              </Motion.div>
             </AnimatePresence>
 
             {/* Alerts */}
             <AnimatePresence>
               {error && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="mb-5 flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm"
                 >
                   <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>{error}</span>
-                </motion.div>
+                </Motion.div>
               )}
               {success && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="mb-5 flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm"
                 >
                   <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>{success}</span>
-                </motion.div>
+                </Motion.div>
               )}
             </AnimatePresence>
 
@@ -158,7 +173,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <AnimatePresence>
                 {mode === 'signup' && (
-                  <motion.div
+                  <Motion.div
                     initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}
                     className="overflow-hidden"
@@ -172,10 +187,10 @@ export default function LoginPage() {
                         onChange={e => setName(e.target.value)}
                         required={mode === 'signup'}
                         placeholder="John Doe"
-                        className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                        className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
                       />
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 )}
               </AnimatePresence>
 
@@ -189,7 +204,7 @@ export default function LoginPage() {
                     onChange={e => setEmail(e.target.value)}
                     required
                     placeholder="you@example.com"
-                    className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                    className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
                   />
                 </div>
               </div>
@@ -204,7 +219,7 @@ export default function LoginPage() {
                     onChange={e => setPassword(e.target.value)}
                     required
                     placeholder="Min. 6 characters"
-                    className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-12 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                    className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg pl-10 pr-12 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 transition-all"
                   />
                   <button
                     type="button"
@@ -216,15 +231,15 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <motion.button
+              <Motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm uppercase tracking-[0.18em] rounded-xl transition-all shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] border border-white/10 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full mt-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm uppercase tracking-[0.12em] sm:tracking-[0.18em] rounded-lg transition-all shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] border border-white/10 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <motion.div
+                  <Motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
                     className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
@@ -235,7 +250,7 @@ export default function LoginPage() {
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
-              </motion.button>
+              </Motion.button>
             </form>
 
             {/* Toggle */}
@@ -256,7 +271,7 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

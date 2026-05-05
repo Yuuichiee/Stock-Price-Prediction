@@ -28,6 +28,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const spotlightRef = useRef(null);
 
   useEffect(() => {
@@ -46,7 +47,15 @@ function Dashboard() {
       }
     };
     window.addEventListener('mousemove', handle, { passive: true });
-    return () => window.removeEventListener('mousemove', handle);
+
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('mousemove', handle);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   useEffect(() => {
@@ -152,7 +161,7 @@ function Dashboard() {
           {/* Left column: Controls + Result */}
           <div className="xl:col-span-4 flex flex-col gap-6">
             {/* Command Deck Card */}
-            <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1200} transitionSpeed={800} scale={1.01} glareEnable glareMaxOpacity={0.08} glarePosition="all" className="rounded-xl sm:rounded-2xl">
+            <Tilt tiltEnable={!isMobile} glareEnable={!isMobile} tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1200} transitionSpeed={800} scale={1.01} glareMaxOpacity={0.08} glarePosition="all" className="rounded-xl sm:rounded-2xl">
               <Motion.div
                 variants={slideIn}
                 className="relative bg-slate-900/70 backdrop-blur-2xl border border-white/8 p-5 sm:p-7 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
@@ -178,13 +187,18 @@ function Dashboard() {
                     <select
                       value={selectedStock}
                       onChange={e => setSelectedStock(e.target.value)}
-                      className="w-full bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 text-white text-sm font-bold rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 p-3.5 transition-all appearance-none outline-none cursor-pointer"
+                      disabled={stocks.length === 0}
+                      className="w-full bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 text-white text-sm font-bold rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 p-3.5 transition-all appearance-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-wait"
                     >
-                      {stocks.map(s => (
-                        <option key={s.symbol} value={s.symbol} className="bg-slate-900">
-                          {s.name} ({s.symbol})
-                        </option>
-                      ))}
+                      {stocks.length === 0 ? (
+                        <option value="">Waking up AI Backend... (Takes ~30s)</option>
+                      ) : (
+                        stocks.map(s => (
+                          <option key={s.symbol} value={s.symbol} className="bg-slate-900">
+                            {s.name} ({s.symbol})
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
 
@@ -240,7 +254,7 @@ function Dashboard() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ type: 'spring', stiffness: 380, damping: 22 }}
                 >
-                  <Tilt tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="rounded-2xl">
+                  <Tilt tiltEnable={!isMobile} tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="rounded-2xl">
                     <div className="relative bg-slate-900/70 backdrop-blur-2xl border-2 border-emerald-500/25 p-7 rounded-2xl shadow-[0_20px_50px_rgba(16,185,129,0.12)] overflow-hidden">
                       <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/20 blur-3xl pointer-events-none" />
                       <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
@@ -382,7 +396,7 @@ function Dashboard() {
               { icon: <Activity />, title: 'Live Algos', desc: 'Real-time extraction of SMA, RSI, and MACD crossover signals sourced from Yahoo Finance data.', color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
               { icon: <TrendingUp />, title: 'Trajectory', desc: 'Multi-day interpolated price projections with T+1, T+3, and T+7 forecast horizons.', color: 'from-purple-600 to-pink-600', shadow: 'shadow-purple-500/20' },
             ].map((f, i) => (
-              <Tilt key={i} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.03} transitionSpeed={400} perspective={800} className="h-full">
+              <Tilt key={i} tiltEnable={!isMobile} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.03} transitionSpeed={400} perspective={800} className="h-full">
                 <Motion.div
                   variants={{
                     hidden: { opacity: 0, y: 20 },

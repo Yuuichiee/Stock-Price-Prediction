@@ -4,11 +4,16 @@ import { Activity, Globe, LogOut, Menu, X } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 import { supabase } from '../supabase';
 
+// Detect mobile once at module level (no re-renders)
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
+
 function StarField() {
   const canvasRef = useRef(null);
-  const mouseRef  = useRef({ x: -9999, y: -9999, vx: 0, vy: 0 });
+  // On mobile we skip mouse interaction entirely
+  const mouseRef = useRef({ x: -9999, y: -9999, vx: 0, vy: 0 });
 
   useEffect(() => {
+    if (IS_MOBILE) return; // no mousemove on touch devices
     let prevX = -9999, prevY = -9999;
     const onMove = (e) => {
       mouseRef.current = {
@@ -32,9 +37,10 @@ function StarField() {
       canvas.height = window.innerHeight;
     };
     resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', resize, { passive: true });
 
-    const N = 160;
+    // Fewer particles on mobile — big win for low-end GPUs
+    const N = IS_MOBILE ? 50 : 90;
     const P = Array.from({ length: N }, () => ({
       x:  Math.random() * window.innerWidth,
       y:  Math.random() * window.innerHeight,
@@ -51,15 +57,21 @@ function StarField() {
       ctx.fillStyle = 'rgba(2, 8, 23, 0.18)';
       ctx.fillRect(0, 0, W, H);
 
-      P.forEach(p => {
+      for (let idx = 0; idx < N; idx++) {
+        const p = P[idx];
         const dx   = mx - p.x;
         const dy   = my - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
-        if (dist < 180) {
-          const strength = (180 - dist) / 180;
-          p.vx += (mvx * 0.025 - dx * 0.0006) * strength;
-          p.vy += (mvy * 0.025 - dy * 0.0006) * strength;
+        // Use squared distance to avoid sqrt on mobile (skip mouse interaction)
+        let near = 0;
+        if (!IS_MOBILE && mx > 0) {
+          const distSq = dx * dx + dy * dy;
+          if (distSq < 180 * 180) {
+            const dist = Math.sqrt(distSq) || 1;
+            const strength = (180 - dist) / 180;
+            p.vx += (mvx * 0.025 - dx * 0.0006) * strength;
+            p.vy += (mvy * 0.025 - dy * 0.0006) * strength;
+            near = Math.max(0, 1 - dist / 140);
+          }
         }
 
         p.vx = p.vx * 0.96 + (Math.random() - 0.5) * 0.008;
@@ -74,9 +86,7 @@ function StarField() {
         p.op += (Math.random() - 0.5) * 0.012;
         p.op  = Math.max(0.1, Math.min(0.85, p.op));
 
-        const near   = Math.max(0, 1 - dist / 140);
         const radius = p.r + near * 2.2;
-
         const r = Math.round(148 + near * 107);
         const g = Math.round(163 + near * 92);
         const b = Math.round(184 + near * 71);
@@ -85,9 +95,10 @@ function StarField() {
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${r},${g},${b},${p.op + near * 0.4})`;
         ctx.fill();
-      });
+      }
 
-      if (mx > 0) {
+      // Mouse glow — desktop only
+      if (!IS_MOBILE && mx > 0) {
         const grad = ctx.createRadialGradient(mx, my, 0, mx, my, 120);
         grad.addColorStop(0,   'rgba(99,102,241,0.07)');
         grad.addColorStop(0.5, 'rgba(59,130,246,0.04)');
@@ -110,18 +121,20 @@ function StarField() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 -z-20 pointer-events-none"
-      style={{ background: 'linear-gradient(135deg, #020817 0%, #050c1f 50%, #030a18 100%)' }}
+      style={{
+        background: 'linear-gradient(135deg, #020817 0%, #050c1f 50%, #030a18 100%)',
+        willChange: 'transform',
+      }}
     />
   );
 }
 
+// Pure CSS animation — zero JS overhead vs Framer Motion loop
 export function FloatingOrb({ className, style }) {
   return (
-    <Motion.div
-      className={`absolute rounded-full blur-3xl pointer-events-none ${className}`}
+    <div
+      className={`absolute rounded-full blur-3xl pointer-events-none animate-orb ${className}`}
       style={style}
-      animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
     />
   );
 }
@@ -234,11 +247,18 @@ export default function Layout({ user }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (IS_MOBILE) return; // no spotlight on touch devices
+    let rafPending = false;
     const handle = (e) => {
-      if (spotlightRef.current) {
-        spotlightRef.current.style.background =
-          `radial-gradient(500px circle at ${e.clientX}px ${e.clientY}px, rgba(59,130,246,0.08), transparent 50%)`;
-      }
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        if (spotlightRef.current) {
+          spotlightRef.current.style.background =
+            `radial-gradient(500px circle at ${e.clientX}px ${e.clientY}px, rgba(59,130,246,0.08), transparent 50%)`;
+        }
+        rafPending = false;
+      });
     };
     window.addEventListener('mousemove', handle, { passive: true });
     return () => window.removeEventListener('mousemove', handle);

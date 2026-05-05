@@ -19,6 +19,16 @@ const FAKE_LOGS = [
   "[OK] Connection stable. Ready for prediction."
 ];
 
+const NODE_POSITIONS = [
+  { x: 50, y: 15 },
+  { x: 25, y: 45 },
+  { x: 75, y: 45 },
+  { x: 50, y: 85 },
+  { x: 50, y: 45 }
+];
+// Pre-computed stable durations — Math.random() in JSX props causes new values every render
+const NODE_DURATIONS = [1.5, 2.2, 1.8, 2.5, 2.0];
+
 const NodeGraph = React.memo(() => (
   <div className="relative w-full max-w-sm mx-auto aspect-square flex items-center justify-center pointer-events-none">
     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
@@ -49,13 +59,7 @@ const NodeGraph = React.memo(() => (
         animate={{ pathLength: 1 }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "linear", delay: 1 }}
       />
-      {[
-        { x: 50, y: 15 },
-        { x: 25, y: 45 },
-        { x: 75, y: 45 },
-        { x: 50, y: 85 },
-        { x: 50, y: 45 }
-      ].map((node, i) => (
+      {NODE_POSITIONS.map((node, i) => (
         <Motion.circle
           key={i}
           cx={node.x}
@@ -64,7 +68,7 @@ const NodeGraph = React.memo(() => (
           fill="#34d399"
           className="filter drop-shadow-[0_0_8px_rgba(52,211,153,1)]"
           animate={{ r: [2.5, 4, 2.5], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 1.5 + Math.random(), repeat: Infinity }}
+          transition={{ duration: NODE_DURATIONS[i], repeat: Infinity }}
         />
       ))}
     </svg>
@@ -72,7 +76,8 @@ const NodeGraph = React.memo(() => (
   </div>
 ));
 
-const ServerConsole = ({ onBootComplete }) => {
+// Memoized — log state updates stay isolated inside this component and don't re-render NeuralNet
+const ServerConsole = React.memo(({ onBootComplete }) => {
   const [logs, setLogs] = useState([]);
   const logContainerRef = useRef(null);
   const autoScrollRef = useRef(true);
@@ -149,11 +154,14 @@ const ServerConsole = ({ onBootComplete }) => {
       </div>
     </div>
   );
-};
+});
+
+// Detect mobile once — no state or resize listener needed
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
 
 export default function NeuralNet() {
-  const [isMobile] = useState(() => window.innerWidth < 768);
   const [isBooting, setIsBooting] = useState(true);
+
 
   const handleBootComplete = useCallback(() => {
     setIsBooting(false);
@@ -179,7 +187,7 @@ export default function NeuralNet() {
         
         {/* Left Col: Brain & Stats */}
         <div className="lg:col-span-7 flex flex-col gap-6">
-          <Tilt tiltEnable={!isMobile} tiltMaxAngleX={2} tiltMaxAngleY={2} scale={1.01} className="w-full">
+          <Tilt tiltEnable={!IS_MOBILE} tiltMaxAngleX={2} tiltMaxAngleY={2} scale={1.01} className="w-full">
             <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
               <div className="w-full md:w-1/2">
                 <NodeGraph />

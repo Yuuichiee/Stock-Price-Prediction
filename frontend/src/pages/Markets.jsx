@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion as Motion } from 'framer-motion';
 import { Globe, TrendingUp, BarChart2, Activity } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 
-const MarketCard = ({ title, value, change, isPositive }) => {
-  const [isMobile] = useState(() => window.innerWidth < 768);
+// Detect once — avoids per-component useState overhead
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
 
+const MarketCard = ({ title, value, change, isPositive }) => {
   return (
-    <Tilt tiltEnable={!isMobile} tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} className="w-full h-full">
+    <Tilt tiltEnable={!IS_MOBILE} tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} className="w-full h-full">
       <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden h-[160px] sm:h-[180px]">
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
         <div>
@@ -23,6 +24,7 @@ const MarketCard = ({ title, value, change, isPositive }) => {
     </Tilt>
   );
 };
+
 
 export default function Markets() {
   return (

@@ -6,6 +6,9 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Tilt from 'react-parallax-tilt';
 import confetti from 'canvas-confetti';
 
+// Module-level constant — avoids resize re-renders on the entire Dashboard
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
+
 // Layout components moved to Layout.jsx
 
 // --- Typing indicator ---
@@ -28,7 +31,6 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     fetchStocks()
@@ -37,14 +39,6 @@ function Dashboard() {
         if (data.length > 0) setSelectedStock(data[0].symbol);
       })
       .catch(() => setError('Failed to connect to backend. Is the server running?'));
-
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
   }, []);
 
   useEffect(() => {
@@ -151,7 +145,7 @@ function Dashboard() {
           {/* Left column: Controls + Result */}
           <div className="xl:col-span-4 flex flex-col gap-6">
             {/* Command Deck Card */}
-            <Tilt tiltEnable={!isMobile} tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1200} transitionSpeed={800} scale={1.01} className="rounded-xl sm:rounded-2xl">
+            <Tilt tiltEnable={!IS_MOBILE} tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1200} transitionSpeed={800} scale={1.01} className="rounded-xl sm:rounded-2xl">
               <Motion.div
                 variants={slideIn}
                 className="relative bg-slate-900 border border-white/8 p-5 sm:p-7 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
@@ -244,7 +238,7 @@ function Dashboard() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ type: 'spring', stiffness: 380, damping: 22 }}
                 >
-                  <Tilt tiltEnable={!isMobile} tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="rounded-2xl">
+                  <Tilt tiltEnable={!IS_MOBILE} tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="rounded-2xl">
                     <div className="relative bg-slate-900 border-2 border-emerald-500/25 p-7 rounded-2xl shadow-[0_20px_50px_rgba(16,185,129,0.12)] overflow-hidden">
                       <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/20 blur-3xl pointer-events-none" />
                       <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
@@ -337,6 +331,7 @@ function Dashboard() {
                     animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
                     className="mb-6"
+                    style={{ willChange: 'transform' }}
                   >
                     <BarChart2 className="w-16 h-16 opacity-20" />
                   </Motion.div>
@@ -382,7 +377,7 @@ function Dashboard() {
               { icon: <Activity />, title: 'Live Algos', desc: 'Real-time extraction of SMA, RSI, and MACD crossover signals sourced from Yahoo Finance data.', color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
               { icon: <TrendingUp />, title: 'Trajectory', desc: 'Multi-day interpolated price projections with T+1, T+3, and T+7 forecast horizons.', color: 'from-purple-600 to-pink-600', shadow: 'shadow-purple-500/20' },
             ].map((f, i) => (
-              <Tilt key={i} tiltEnable={!isMobile} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.03} transitionSpeed={400} perspective={800} className="h-full">
+              <Tilt key={i} tiltEnable={!IS_MOBILE} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.03} transitionSpeed={400} perspective={800} className="h-full">
                 <Motion.div
                   variants={{
                     hidden: { opacity: 0, y: 20 },

@@ -1,40 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { Terminal as TerminalIcon, Activity, Zap } from 'lucide-react';
+import { Terminal as TerminalIcon } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, YAxis } from 'recharts';
 import Tilt from 'react-parallax-tilt';
 
+// Detect once at module level — avoids re-renders from resize
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
+
 const generateData = (startPrice, volatility) => {
   let current = startPrice;
-  return Array.from({ length: 40 }, (_, i) => {
+  return Array.from({ length: 40 }, () => {
     current = current + (Math.random() - 0.5) * volatility;
     return { value: current };
   });
 };
 
-const MiniTerminal = ({ title, symbol, startPrice, color, volatility }) => {
-  const [data, setData] = useState(() => generateData(startPrice, volatility));
-  const [currentPrice, setCurrentPrice] = useState(startPrice);
-  const [isMobile] = useState(() => window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+// Memoized so only this card re-renders when its own data changes
+const MiniTerminal = React.memo(({ title, symbol, startPrice, color, volatility }) => {
+  // Combined state to cut re-renders in half per tick
+  const [state, setState] = useState(() => ({
+    data: generateData(startPrice, volatility),
+    currentPrice: startPrice,
+  }));
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setData(prev => {
-        const lastVal = prev[prev.length - 1].value;
+      setState(prev => {
+        const lastVal = prev.data[prev.data.length - 1].value;
         const newVal = lastVal + (Math.random() - 0.5) * volatility;
-        setCurrentPrice(newVal);
-        return [...prev.slice(1), { value: newVal }];
+        return {
+          data: [...prev.data.slice(1), { value: newVal }],
+          currentPrice: newVal,
+        };
       });
     }, 1000);
     return () => clearInterval(interval);
   }, [volatility]);
 
+  const { data, currentPrice } = state;
   const isUp = data[data.length - 1].value >= data[data.length - 2].value;
 
   return (
@@ -82,7 +85,8 @@ const MiniTerminal = ({ title, symbol, startPrice, color, volatility }) => {
       </div>
     </div>
   );
-};
+});
+
 
 export default function Terminals() {
   const container = {

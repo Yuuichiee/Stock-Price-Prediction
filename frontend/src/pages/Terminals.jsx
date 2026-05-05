@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { Terminal as TerminalIcon } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, YAxis } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, YAxis, Tooltip } from 'recharts';
 import Tilt from 'react-parallax-tilt';
 
 // Detect once at module level — avoids re-renders from resize
@@ -63,6 +63,8 @@ const MiniTerminal = React.memo(({ title, symbol, startPrice, color, volatility 
         <div className="flex-1 -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 mt-2 relative z-0 opacity-80 group-hover:opacity-100 transition-opacity">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
+              {/* Disable tooltip popup and cursor line on touch/hover */}
+              <Tooltip content={() => null} cursor={false} />
               <defs>
                 <linearGradient id={`gradient-${symbol}`} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
@@ -77,7 +79,8 @@ const MiniTerminal = React.memo(({ title, symbol, startPrice, color, volatility 
                 strokeWidth={3} 
                 fillOpacity={1} 
                 fill={`url(#gradient-${symbol})`} 
-                isAnimationActive={false} 
+                isAnimationActive={false}
+                activeDot={false}
               />
             </AreaChart>
           </ResponsiveContainer>

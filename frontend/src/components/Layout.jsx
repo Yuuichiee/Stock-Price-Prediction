@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Activity, Globe, LogOut, Menu, X } from 'lucide-react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 // Detect mobile once at module level (no re-renders)
@@ -255,6 +255,7 @@ function LiveTicker() {
 export default function Layout({ user }) {
   const spotlightRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     if (IS_MOBILE) return; // no spotlight on touch devices
@@ -402,9 +403,19 @@ export default function Layout({ user }) {
         )}
       </AnimatePresence>
 
-      <div className="flex-1 relative z-10 w-full max-w-7xl mx-auto">
-         <Outlet />
-      </div>
+      {/* Page content — keyed by pathname so AnimatePresence animates each route change */}
+      <AnimatePresence mode="sync" initial={false}>
+        <Motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex-1 relative z-10 w-full max-w-7xl mx-auto"
+        >
+          <Outlet />
+        </Motion.div>
+      </AnimatePresence>
 
       <footer className="border-t border-white/5 mt-8 py-8 relative z-10 w-full">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center text-slate-500 text-[10px] sm:text-xs font-mono tracking-[0.1em] sm:tracking-widest flex flex-col sm:block gap-1.5 opacity-80 hover:opacity-100 transition-opacity">

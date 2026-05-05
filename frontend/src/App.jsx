@@ -2,6 +2,9 @@ import React, { useState, useEffect, Suspense, lazy, startTransition } from 'rea
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase';
 import Layout from './components/Layout';
+import { FeatureFlagsProvider } from './context/FeatureFlags';
+
+const ADMIN_EMAIL = 'shivachauhan98171@gmail.com';
 
 // Lazy-load every page — each becomes its own JS chunk.
 // React only parses + executes a page's code when you FIRST navigate to it.
@@ -10,7 +13,8 @@ const LoginPage  = lazy(() => import('./pages/LoginPage'));
 const Dashboard  = lazy(() => import('./pages/Dashboard'));
 const Terminals  = lazy(() => import('./pages/Terminals'));
 const NeuralNet  = lazy(() => import('./pages/NeuralNet'));
-const Markets    = lazy(() => import('./pages/Markets'));
+const Markets       = lazy(() => import('./pages/Markets'));
+const AdminConsole  = lazy(() => import('./pages/AdminConsole'));
 
 // Minimal fallback shown while a lazy page chunk loads (first visit only)
 function PageFallback() {
@@ -60,25 +64,30 @@ export default function App() {
     </div>
   );
 
+  const isAdmin = session?.user?.email === ADMIN_EMAIL;
+
   return (
-    <Router>
-      <Suspense fallback={<PageFallback />}>
-        {session ? (
-          <Routes>
-            <Route element={<Layout user={session.user} />}>
-              <Route path="/"            element={<Dashboard user={session.user} />} />
-              <Route path="/terminals"   element={<Terminals />} />
-              <Route path="/neural-net" element={<NeuralNet />} />
-              <Route path="/markets"     element={<Markets />} />
-              <Route path="*"            element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        ) : (
-          <Routes>
-            <Route path="*" element={<LoginPage />} />
-          </Routes>
-        )}
-      </Suspense>
-    </Router>
+    <FeatureFlagsProvider>
+      <Router>
+        <Suspense fallback={<PageFallback />}>
+          {session ? (
+            <Routes>
+              <Route element={<Layout user={session.user} isAdmin={isAdmin} />}>
+                <Route path="/"            element={<Dashboard user={session.user} />} />
+                <Route path="/terminals"   element={<Terminals />} />
+                <Route path="/neural-net" element={<NeuralNet />} />
+                <Route path="/markets"     element={<Markets />} />
+                <Route path="/admin"       element={isAdmin ? <AdminConsole user={session.user} /> : <Navigate to="/" replace />} />
+                <Route path="*"            element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          ) : (
+            <Routes>
+              <Route path="*" element={<LoginPage />} />
+            </Routes>
+          )}
+        </Suspense>
+      </Router>
+    </FeatureFlagsProvider>
   );
 }

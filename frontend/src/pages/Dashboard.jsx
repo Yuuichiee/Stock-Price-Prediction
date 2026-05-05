@@ -5,6 +5,8 @@ import { TrendingUp, Activity, BarChart2, Clock, CheckCircle2, Cpu, Zap, Layers 
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Tilt from 'react-parallax-tilt';
 import confetti from 'canvas-confetti';
+import { adminApi } from '../adminApi';
+import { useFeatureFlag } from '../context/FeatureFlags';
 
 // Module-level constant — avoids resize re-renders on the entire Dashboard
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -45,6 +47,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const predictionsEnabled = useFeatureFlag('predictions');
 
   useEffect(() => {
     fetchStocks()
@@ -74,6 +77,7 @@ function Dashboard() {
 
   const handlePredict = async (e) => {
     e.preventDefault();
+    if (!predictionsEnabled) return;
     setLoading(true);
     setError('');
     setResult(null);
@@ -84,6 +88,8 @@ function Dashboard() {
       if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
       // Audio chime
       playSuccessChime();
+      // Log to admin activity log (fire-and-forget)
+      adminApi.logAction(`prediction:${selectedStock}:${timeHorizon}`, { symbol: selectedStock, horizon: timeHorizon }).catch(() => {});
     } catch (err) {
       const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
       setError(
@@ -233,11 +239,13 @@ function Dashboard() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                     type="submit"
-                    disabled={loading || stocks.length === 0}
+                    disabled={loading || stocks.length === 0 || !predictionsEnabled}
                     className="w-full relative overflow-hidden py-4 text-xs sm:text-sm font-black uppercase tracking-[0.12em] sm:tracking-[0.18em] text-white bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] border border-white/15 group"
                   >
                     <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                    {loading ? (
+                    {!predictionsEnabled ? (
+                      <span className="relative z-10">Feature Disabled by Admin</span>
+                    ) : loading ? (
                       <span className="relative z-10 inline-block" style={{ animation: 'logo-rotate 0.7s linear infinite' }}>
                         <Layers className="w-5 h-5" />
                       </span>

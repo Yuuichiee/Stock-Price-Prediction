@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Activity, LogOut, Menu, X } from 'lucide-react';
+import { Activity, LogOut, Menu, X, Shield } from 'lucide-react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { useFeatureFlag } from '../context/FeatureFlags';
+import { adminApi } from '../adminApi';
 
 // Detect mobile once at module level (no re-renders)
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -216,10 +218,11 @@ function PredictifiLogo() {
 }
 
 
-const NAV_ITEMS = [
-  { name: 'Terminals', path: '/terminals',  prefetch: () => import('../pages/Terminals')  },
-  { name: 'Neural Net', path: '/neural-net', prefetch: () => import('../pages/NeuralNet')  },
-  { name: 'Markets',   path: '/markets',    prefetch: () => import('../pages/Markets')    },
+// Nav items declared without flags — flags are applied inside the Layout component
+const NAV_ITEMS_CONFIG = [
+  { name: 'Terminals', path: '/terminals',  flagKey: 'terminals',  prefetch: () => import('../pages/Terminals')  },
+  { name: 'Neural Net', path: '/neural-net', flagKey: 'neural_net', prefetch: () => import('../pages/NeuralNet')  },
+  { name: 'Markets',   path: '/markets',    flagKey: 'markets',    prefetch: () => import('../pages/Markets')    },
 ];
 
 function LiveTicker() {
@@ -309,10 +312,24 @@ function LiveTicker() {
   );
 }
 
-export default function Layout({ user }) {
+export default function Layout({ user, isAdmin }) {
   const spotlightRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+
+  // Feature flags for each nav item
+  const showTerminals = useFeatureFlag('terminals');
+  const showNeuralNet = useFeatureFlag('neural_net');
+  const showMarkets   = useFeatureFlag('markets');
+  const flagMap = { terminals: showTerminals, neural_net: showNeuralNet, markets: showMarkets };
+  const NAV_ITEMS = NAV_ITEMS_CONFIG.filter(item => flagMap[item.flagKey] !== false);
+
+  // Log page visits (fire-and-forget, don't block render)
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/') return; // skip homepage to reduce noise
+    adminApi.logAction(`page:${path.replace('/', '')}`, { path }).catch(() => {});
+  }, [location.pathname]);
 
   useEffect(() => {
     if (IS_MOBILE) return; // no spotlight on touch devices
@@ -366,6 +383,7 @@ export default function Layout({ user }) {
             </Motion.div>
           </Link>
 
+            {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.18em]">
             {NAV_ITEMS.map((item) => (
               <Link key={item.name} to={item.path} onMouseEnter={item.prefetch}>
@@ -377,6 +395,16 @@ export default function Layout({ user }) {
                 </Motion.span>
               </Link>
             ))}
+            {isAdmin && (
+              <Link to="/admin">
+                <Motion.span
+                  className="flex items-center gap-1.5 text-red-400/80 hover:text-red-300 transition-colors cursor-pointer"
+                  whileHover={{ y: -1 }}
+                >
+                  <Shield className="w-3 h-3" /> Admin
+                </Motion.span>
+              </Link>
+            )}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 border border-slate-700/50 rounded-lg">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-[10px] font-black text-white">

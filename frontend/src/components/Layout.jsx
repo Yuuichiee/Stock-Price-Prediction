@@ -460,47 +460,48 @@ export default function Layout({ user }) {
         )}
       </AnimatePresence>
 
-      {/* ── Signal Wipe ───────────────────────────────────────────────────────
-           Two gradient bars sweep left→right on sub-route navigation.
-           Each has a glowing leading edge — like a holographic scanner cut.
-           Dashboard (/) is always untouched. */}
+      {/* ── Money Rain transition ─────────────────────────────────────────
+           Bills/coins rain down on sub-route navigation.
+           Pre-computed positions = no Math.random at render time. */}
       {location.pathname !== '/' && [
-        {
-          bg: 'linear-gradient(160deg, #4f46e5 0%, #7c3aed 100%)',
-          shadow: '6px 0 32px rgba(124,58,237,0.9), 12px 0 60px rgba(99,102,241,0.5)',
-          delay: 0,
-          z: 62,
-        },
-        {
-          bg: 'linear-gradient(160deg, #1d4ed8 0%, #0ea5e9 100%)',
-          shadow: '6px 0 24px rgba(14,165,233,0.8), 12px 0 48px rgba(59,130,246,0.4)',
-          delay: 0.07,
-          z: 61,
-        },
-      ].map(({ bg, shadow, delay, z }, i) => (
+        { e: '💵', l: 5,  d: 0,    r: -15, s: 34, dx: -18 },
+        { e: '🪙', l: 16, d: 0.07, r: 22,  s: 26, dx: 12  },
+        { e: '₿',  l: 27, d: 0.02, r: -8,  s: 28, dx: -8  },
+        { e: '💵', l: 38, d: 0.1,  r: 14,  s: 32, dx: 20  },
+        { e: '💰', l: 50, d: 0.05, r: -25, s: 30, dx: -15 },
+        { e: '🪙', l: 60, d: 0.08, r: 18,  s: 24, dx: 10  },
+        { e: '💵', l: 72, d: 0.01, r: -10, s: 36, dx: -22 },
+        { e: '₿',  l: 82, d: 0.06, r: 30,  s: 26, dx: 16  },
+        { e: '💰', l: 91, d: 0.03, r: -5,  s: 28, dx: -10 },
+        { e: '🪙', l: 22, d: 0.12, r: -28, s: 22, dx: 8   },
+        { e: '💵', l: 45, d: 0.09, r: 8,   s: 30, dx: -20 },
+        { e: '₿',  l: 68, d: 0.04, r: -18, s: 24, dx: 14  },
+        { e: '💰', l: 12, d: 0.11, r: 20,  s: 26, dx: -12 },
+        { e: '🪙', l: 88, d: 0.13, r: -12, s: 22, dx: 18  },
+      ].map(({ e, l, d, r, s, dx }, i) => (
         <Motion.div
-          key={`wipe-${i}-${location.pathname}`}
-          initial={{ x: '-100%' }}
-          animate={{ x: [null, '0%', '102%'] }}
-          transition={{ duration: 0.44, delay, times: [0, 0.38, 1], ease: 'easeInOut' }}
+          key={`money-${i}-${location.pathname}`}
+          initial={{ y: -70, x: 0, rotate: r, opacity: 1 }}
+          animate={{ y: '115vh', x: dx, rotate: r + 720, opacity: [1, 1, 1, 0] }}
+          transition={{ duration: 0.85, delay: d, ease: 'easeIn', opacity: { times: [0, 0.6, 0.85, 1] } }}
           style={{
-            position: 'fixed', inset: 0,
-            background: bg,
-            boxShadow: shadow,
-            zIndex: z,
-            pointerEvents: 'none',
+            position: 'fixed', top: 0, left: `${l}%`,
+            fontSize: s, zIndex: 62, pointerEvents: 'none',
+            userSelect: 'none', willChange: 'transform',
           }}
-        />
+        >
+          {e}
+        </Motion.div>
       ))}
 
-      {/* Page content — fades in at 300ms (as wipe bars are sweeping off-screen right) */}
+      {/* Page fades in at 250ms — appears while money is mid-fall */}
       <AnimatePresence mode="sync" initial={false}>
         <Motion.div
           key={location.pathname}
           initial={location.pathname !== '/' ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
           transition={location.pathname !== '/'
-            ? { duration: 0.2, delay: 0.3, ease: 'easeOut' }
+            ? { duration: 0.2, delay: 0.25, ease: 'easeOut' }
             : { duration: 0 }
           }
           className="flex-1 relative z-10 w-full max-w-7xl mx-auto"

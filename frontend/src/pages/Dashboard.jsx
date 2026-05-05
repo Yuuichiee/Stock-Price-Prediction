@@ -9,9 +9,23 @@ import confetti from 'canvas-confetti';
 // Module-level constant — avoids resize re-renders on the entire Dashboard
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
 
-// Layout components moved to Layout.jsx
+// Plays a C→E→G arpeggio via Web Audio API when prediction succeeds
+function playSuccessChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [{ f: 523.25, t: 0 }, { f: 659.25, t: 0.1 }, { f: 783.99, t: 0.2 }].forEach(({ f, t }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.22, ctx.currentTime + t);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.45);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.5);
+    });
+  } catch (_) { /* AudioContext not supported */ }
+}
 
-// --- Typing indicator ---
 function NetworkIcon(props) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -66,6 +80,10 @@ function Dashboard() {
     try {
       const data = await predictStock(selectedStock, timeHorizon);
       setResult(data);
+      // Haptic feedback on mobile
+      if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+      // Audio chime
+      playSuccessChime();
     } catch (err) {
       const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
       setError(
@@ -220,9 +238,9 @@ function Dashboard() {
                   >
                     <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                     {loading ? (
-                      <Motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }} className="relative z-10">
+                      <span className="relative z-10 inline-block" style={{ animation: 'logo-rotate 0.7s linear infinite' }}>
                         <Layers className="w-5 h-5" />
-                      </Motion.span>
+                      </span>
                     ) : (
                       <span className="relative z-10 flex items-center gap-2">
                         Initiate Sequence <Zap className="w-4 h-4 fill-yellow-400 text-yellow-400" />

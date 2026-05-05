@@ -460,44 +460,55 @@ export default function Layout({ user }) {
         )}
       </AnimatePresence>
 
-      {/* ── AMV Flash-Cut Overlay ────────────────────────────────────────
-           Fires on every sub-route change. A blue/indigo layer flashes
-           then instantly fades — the classic AMV "flash frame" between cuts. */}
-      <AnimatePresence>
-        {location.pathname !== '/' && (
-          <Motion.div
-            key={`flash-${location.pathname}`}
-            initial={{ opacity: 0.55 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.28, ease: 'easeOut' }}
-            className="fixed inset-0 z-50 pointer-events-none"
-            style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.5) 0%, rgba(59,130,246,0.35) 50%, rgba(16,185,129,0.15) 100%)' }}
-          />
-        )}
-      </AnimatePresence>
+      {/* ── Signal Wipe ───────────────────────────────────────────────────────
+           Two gradient bars sweep left→right on sub-route navigation.
+           Each has a glowing leading edge — like a holographic scanner cut.
+           Dashboard (/) is always untouched. */}
+      {location.pathname !== '/' && [
+        {
+          bg: 'linear-gradient(160deg, #4f46e5 0%, #7c3aed 100%)',
+          shadow: '6px 0 32px rgba(124,58,237,0.9), 12px 0 60px rgba(99,102,241,0.5)',
+          delay: 0,
+          z: 62,
+        },
+        {
+          bg: 'linear-gradient(160deg, #1d4ed8 0%, #0ea5e9 100%)',
+          shadow: '6px 0 24px rgba(14,165,233,0.8), 12px 0 48px rgba(59,130,246,0.4)',
+          delay: 0.07,
+          z: 61,
+        },
+      ].map(({ bg, shadow, delay, z }, i) => (
+        <Motion.div
+          key={`wipe-${i}-${location.pathname}`}
+          initial={{ x: '-100%' }}
+          animate={{ x: [null, '0%', '102%'] }}
+          transition={{ duration: 0.44, delay, times: [0, 0.38, 1], ease: 'easeInOut' }}
+          style={{
+            position: 'fixed', inset: 0,
+            background: bg,
+            boxShadow: shadow,
+            zIndex: z,
+            pointerEvents: 'none',
+          }}
+        />
+      ))}
 
-      {/* ── Page Content / AMV Zoom-Burst Enter ──────────────────────────
-           Sub-routes: zoom up from 0.92 scale + blur-in (desktop only).
-           The spring easing [0.16,1,0.3,1] gives that snappy anime-cut pop.
-           Dashboard (/): instant, preserves its own stagger animations.  */}
+      {/* Page content — fades in at 300ms (as wipe bars are sweeping off-screen right) */}
       <AnimatePresence mode="sync" initial={false}>
         <Motion.div
           key={location.pathname}
-          initial={location.pathname !== '/'
-            ? { opacity: 0, scale: 0.92, filter: IS_MOBILE ? 'blur(0px)' : 'blur(6px)' }
-            : false
-          }
-          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          initial={location.pathname !== '/' ? { opacity: 0 } : false}
+          animate={{ opacity: 1 }}
           transition={location.pathname !== '/'
-            ? { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+            ? { duration: 0.2, delay: 0.3, ease: 'easeOut' }
             : { duration: 0 }
           }
           className="flex-1 relative z-10 w-full max-w-7xl mx-auto"
-          style={{ willChange: 'transform, opacity' }}
         >
           <Outlet />
         </Motion.div>
       </AnimatePresence>
+
 
       <footer className="border-t border-white/5 mt-8 py-8 relative z-10 w-full">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center text-slate-500 text-[10px] sm:text-xs font-mono tracking-[0.1em] sm:tracking-widest flex flex-col sm:block gap-1.5 opacity-80 hover:opacity-100 transition-opacity">

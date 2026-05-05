@@ -70,19 +70,21 @@ export default function Markets() {
                   <stop offset="50%" stopColor="#eab308" />
                   <stop offset="100%" stopColor="#10b981" />
                 </linearGradient>
-              </defs>
-              
-              <Motion.g
-                initial={{ rotate: -90 }}
-                animate={{ rotate: 50 }} // 50 degrees points to "Bullish"
-                transition={{ type: "spring", stiffness: 40, damping: 15, delay: 0.8 }}
-                style={{ transformOrigin: '50px 50px' }}
-              >
-                {/* Needle */}
-                <polygon points="48.5,50 51.5,50 50,15" fill="#ffffff" className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" />
-                <circle cx="50" cy="50" r="3" fill="#ffffff" />
-              </Motion.g>
             </svg>
+
+            {/* Hardware Accelerated HTML Needle */}
+            <Motion.div 
+              className="absolute bottom-0 left-1/2 w-1 sm:w-1.5 h-[80%] bg-white rounded-full origin-bottom transform-gpu will-change-transform shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+              initial={{ x: "-50%", rotate: -90 }}
+              animate={{ x: "-50%", rotate: 50 }}
+              transition={{ type: "spring", stiffness: 40, damping: 15, delay: 0.8 }}
+            >
+              {/* Pointy Tip */}
+              <div className="absolute top-0 left-1/2 w-0 h-0 border-l-[2px] border-r-[2px] sm:border-l-[3px] sm:border-r-[3px] border-b-[8px] sm:border-b-[12px] border-transparent border-b-white -translate-x-1/2 -translate-y-full" />
+            </Motion.div>
+            
+            {/* Center Anchor Dot */}
+            <div className="absolute bottom-[-4px] sm:bottom-[-6px] left-1/2 w-3 h-3 sm:w-4 sm:h-4 bg-slate-900 border-2 sm:border-[3px] border-white rounded-full -translate-x-1/2" />
           </div>
           
           <Motion.div 

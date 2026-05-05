@@ -340,10 +340,11 @@ export default function Layout({ user }) {
         <AnimatePresence>
           {mobileMenuOpen && (
             <Motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden border-t border-white/5 bg-[#050c1f]"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="md:hidden border-t border-white/5 bg-[#050c1f]"
             >
               <div className="px-4 py-4 space-y-2.5 relative z-50">
                 {NAV_ITEMS.map(item => (

@@ -46,6 +46,12 @@ html, body {
   animation: orb-pulse 6s ease-in-out infinite;
 }
 
+/* Equalizer bar loader — scaleY is GPU composited (no layout reflow) */
+@keyframes eq-bar {
+  0%, 100% { transform: scaleY(0.15); }
+  50%       { transform: scaleY(1);    }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #020817; }

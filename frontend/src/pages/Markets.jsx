@@ -94,13 +94,13 @@ export default function Markets() {
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.2, duration: 0.5 }}
             className="mt-8 text-2xl sm:text-4xl font-black text-emerald-400 uppercase tracking-tighter"
           >
-            Strong Bullish
+            Bullish Momentum
           </Motion.div>
           <Motion.p 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4, duration: 0.5 }}
             className="text-slate-500 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed"
           >
-            Neural network aggregations across 500+ global assets indicate strong upward momentum for the next 72 hours.
+            Ensemble model aggregates signals across 500+ global instruments — net bias indicates upward price pressure over the next 72-hour window.
           </Motion.p>
         </div>
       </Motion.div>

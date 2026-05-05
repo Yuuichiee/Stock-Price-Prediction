@@ -295,10 +295,27 @@ function Dashboard() {
               <div className="absolute top-0 right-0 w-72 h-72 bg-blue-700/8 rounded-full blur-3xl pointer-events-none" />
 
               {loading ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                  <div className="w-20 h-20 rounded-full border-4 border-slate-800 border-t-blue-500 animate-[spin_1.5s_linear_infinite] mb-6 transform-gpu will-change-transform shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest mb-2">Aggregating</h3>
-                  <p className="text-xs uppercase tracking-widest text-slate-500">Querying neural datasets...</p>
+                <div className="flex-1 flex flex-col items-center justify-center gap-8">
+                  {/* Animated equalizer bars — GPU composited, fits financial theme */}
+                  <div className="flex items-end gap-1.5" style={{ height: '52px' }}>
+                    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                      <div
+                        key={i}
+                        className="w-2 rounded-full bg-blue-500"
+                        style={{
+                          height: '100%',
+                          transformOrigin: 'bottom',
+                          animation: `eq-bar 1.1s ease-in-out ${(i * 0.11).toFixed(2)}s infinite`,
+                          opacity: 0.7 + (i % 3) * 0.1,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest mb-2">Processing</h3>
+                    <p className="text-xs uppercase tracking-widest text-slate-500">Querying neural datasets...</p>
+                    <p className="text-[10px] text-slate-600 mt-2">Backend may take ~30s to wake up</p>
+                  </div>
                 </div>
               ) : result ? (
                 <Motion.div
@@ -387,7 +404,7 @@ function Dashboard() {
                     hidden: { opacity: 0, y: 20 },
                     visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
                   }}
-                  className="relative bg-slate-900/70 backdrop-blur-xl border border-white/6 p-6 sm:p-8 rounded-2xl h-full hover:border-white/15 transition-all shadow-lg sm:shadow-xl group overflow-hidden cursor-default"
+                  className="relative bg-slate-900/70 border border-white/6 p-6 sm:p-8 rounded-2xl h-full hover:border-white/15 transition-all shadow-lg sm:shadow-xl group overflow-hidden cursor-default"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-white/4 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   <div className={`p-3.5 bg-gradient-to-br ${f.color} w-fit rounded-2xl mb-6 shadow-md sm:shadow-lg ${f.shadow} text-white group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300`}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { Cpu, Network, Database, Code2, Terminal } from 'lucide-react';
+import { Cpu, Network, Database, Code2, Terminal, CheckCircle2 } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 
 const FAKE_LOGS = [
@@ -77,19 +77,41 @@ export default function NeuralNet() {
   const [isMobile] = useState(() => window.innerWidth < 768);
   const logContainerRef = useRef(null);
 
+  const [isBooting, setIsBooting] = useState(true);
+
   useEffect(() => {
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < FAKE_LOGS.length) {
-        setLogs(prev => [...prev, FAKE_LOGS[i]]);
-        i++;
+    let bootIndex = 0;
+    let liveInterval;
+
+    const bootInterval = setInterval(() => {
+      if (bootIndex < FAKE_LOGS.length) {
+        setLogs(prev => [...prev, FAKE_LOGS[bootIndex]]);
+        bootIndex++;
       } else {
-        // Loop back for endless effect
-        setTimeout(() => setLogs([]), 5000);
-        i = 0;
+        clearInterval(bootInterval);
+        setIsBooting(false);
+        
+        // Start "live polling" mode
+        liveInterval = setInterval(() => {
+           const ping = Math.floor(Math.random() * 50) + 12;
+           const assets = ['TSLA', 'AAPL', 'NVDA', 'BTC-USD', 'NIFTY 50'];
+           const randomAsset = assets[Math.floor(Math.random() * assets.length)];
+           const memory = (Math.random() * 2 + 6).toFixed(2);
+           
+           const newLog = Math.random() > 0.5 
+             ? `[NET] Polling stream... Latency ${ping}ms.`
+             : `[SYS] Validating ${randomAsset} trajectory. Mem usage: ${memory}GB.`;
+             
+           // Keep max 30 logs to prevent infinite memory leak
+           setLogs(prev => [...prev.slice(-30), newLog]); 
+        }, 2500);
       }
     }, 800);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(bootInterval);
+      if (liveInterval) clearInterval(liveInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -144,7 +166,13 @@ export default function NeuralNet() {
                       <div className="text-sm font-black text-white">1.21%</div>
                       <div className="text-[9px] text-slate-500 uppercase tracking-widest">Mean Absolute Error</div>
                     </div>
-                    <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-[spin_3s_linear_infinite]" />
+                    {isBooting ? (
+                      <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-[spin_3s_linear_infinite]" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                        <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

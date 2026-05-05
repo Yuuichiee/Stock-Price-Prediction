@@ -4,6 +4,7 @@ import StockChart from '../components/StockChart';
 import { TrendingUp, Activity, BarChart2, Clock, CheckCircle2, Cpu, Zap, Layers } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Tilt from 'react-parallax-tilt';
+import confetti from 'canvas-confetti';
 
 // Layout components moved to Layout.jsx
 
@@ -48,6 +49,23 @@ function Dashboard() {
     return () => window.removeEventListener('mousemove', handle);
   }, []);
 
+  useEffect(() => {
+    if (result && !loading) {
+      const finalPred = result.predictions?.at(-1);
+      const lastHist = result.historical?.at(-1)?.Close;
+      if (finalPred && lastHist) {
+        if (finalPred.Predicted_Close >= lastHist) {
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.6 },
+            colors: ['#34d399', '#10b981', '#059669', '#ffffff']
+          });
+        }
+      }
+    }
+  }, [result, loading]);
+
   const handlePredict = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -64,6 +82,8 @@ function Dashboard() {
   };
 
   const finalPrediction = result?.predictions?.at(-1);
+  const lastHistorical = result?.historical?.at(-1)?.Close;
+  const isGoodPrediction = finalPrediction && lastHistorical && (finalPrediction.Predicted_Close >= lastHistorical);
 
   const container = {
     hidden: { opacity: 0 },
@@ -237,10 +257,28 @@ function Dashboard() {
                         </div>
                         <div className="flex flex-col gap-0.5 pt-1">
                           <span className="text-slate-500 text-[10px] font-black uppercase tracking-[0.15em]">Projected Target</span>
-                          <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 text-4xl tracking-tighter">
+                          <span className={`font-black text-transparent bg-clip-text text-4xl tracking-tighter ${isGoodPrediction ? 'bg-gradient-to-r from-emerald-400 to-cyan-400' : 'bg-gradient-to-r from-red-400 to-orange-400'}`}>
                             {finalPrediction ? `$${Number(finalPrediction.Predicted_Close).toFixed(2)}` : 'N/A'}
                           </span>
                         </div>
+                        {finalPrediction && lastHistorical && (
+                          <div className={`mt-4 p-4 rounded-xl border ${isGoodPrediction ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                            <h4 className={`text-sm font-black uppercase tracking-widest mb-1 ${isGoodPrediction ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {isGoodPrediction ? '🚀 Good Time to Invest' : '⚠️ High Risk Expected'}
+                            </h4>
+                            <p className="text-xs text-slate-400 mb-3">
+                              {isGoodPrediction ? 'Model projects an upward trajectory.' : 'Model projects a downward trajectory.'}
+                            </p>
+                            <a 
+                              href={`https://finance.yahoo.com/quote/${result.symbol}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`inline-block px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] rounded-lg transition-all ${isGoodPrediction ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-red-500 hover:bg-red-400 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]'}`}
+                            >
+                              View & Invest
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Tilt>
@@ -267,7 +305,11 @@ function Dashboard() {
               ) : result ? (
                 <Motion.div
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    x: (!isGoodPrediction && finalPrediction) ? [-8, 8, -8, 8, 0] : 0
+                  }}
                   transition={{ duration: 0.5 }}
                   className="flex flex-col h-full"
                 >

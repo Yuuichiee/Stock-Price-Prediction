@@ -118,8 +118,22 @@ def fetch_data(symbol, period=None):
 
     # Check if the CSV file exists on disk
     if not os.path.exists(csv_path):
-        print(f"[ERROR] Dataset not found: {csv_path}")
-        return pd.DataFrame()
+        print(f"[INFO] Dataset not found: {csv_path}. Auto-downloading 5-year history...")
+        try:
+            import yfinance as yf
+            new_df = yf.Ticker(symbol).history(period="5y")
+            if new_df.empty:
+                print(f"[ERROR] Failed to download data for {symbol}.")
+                return pd.DataFrame()
+            new_df.reset_index(inplace=True)
+            new_df['Date'] = pd.to_datetime(new_df['Date'], utc=True).dt.tz_localize(None)
+            cols = [c for c in ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'] if c in new_df.columns]
+            new_df = new_df[cols]
+            new_df.to_csv(csv_path, index=False)
+            print(f"[INFO] Successfully created {csv_filename} with {len(new_df)} rows.")
+        except Exception as e:
+            print(f"[ERROR] Auto-download failed for {symbol}: {e}")
+            return pd.DataFrame()
 
     # --- Auto-update: append any missing recent days (skips silently if offline) ---
     _try_update_csv(symbol, csv_path)

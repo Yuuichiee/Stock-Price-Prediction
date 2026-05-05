@@ -19,7 +19,27 @@ POPULAR_STOCKS = [
     {"symbol": "AMZN", "name": "Amazon.com Inc."},
     {"symbol": "TSLA", "name": "Tesla Inc."},
     {"symbol": "RELIANCE.NS", "name": "Reliance Industries"},
-    {"symbol": "TCS.NS", "name": "Tata Consultancy Services"}
+    {"symbol": "TCS.NS", "name": "Tata Consultancy Services"},
+    {"symbol": "HDFCBANK.NS", "name": "HDFC Bank Ltd."},
+    {"symbol": "INFY.NS", "name": "Infosys Ltd."},
+    {"symbol": "ICICIBANK.NS", "name": "ICICI Bank Ltd."},
+    {"symbol": "SBIN.NS", "name": "State Bank of India"},
+    {"symbol": "ITC.NS", "name": "ITC Ltd."},
+    {"symbol": "BHARTIARTL.NS", "name": "Bharti Airtel Ltd."},
+    {"symbol": "LT.NS", "name": "Larsen & Toubro Ltd."},
+    {"symbol": "BAJFINANCE.NS", "name": "Bajaj Finance Ltd."},
+    {"symbol": "AXISBANK.NS", "name": "Axis Bank Ltd."},
+    {"symbol": "HINDUNILVR.NS", "name": "Hindustan Unilever"},
+    {"symbol": "KOTAKBANK.NS", "name": "Kotak Mahindra Bank"},
+    {"symbol": "MARUTI.NS", "name": "Maruti Suzuki India"},
+    {"symbol": "TATAMOTORS.NS", "name": "Tata Motors Ltd."},
+    {"symbol": "SUNPHARMA.NS", "name": "Sun Pharmaceutical"},
+    {"symbol": "TITAN.NS", "name": "Titan Company Ltd."},
+    {"symbol": "ULTRACEMCO.NS", "name": "UltraTech Cement"},
+    {"symbol": "ASIANPAINT.NS", "name": "Asian Paints Ltd."},
+    {"symbol": "NTPC.NS", "name": "NTPC Ltd."},
+    {"symbol": "WIPRO.NS", "name": "Wipro Ltd."},
+    {"symbol": "HCLTECH.NS", "name": "HCL Technologies"}
 ]
 
 @app.route('/api/stocks', methods=['GET'])

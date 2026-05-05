@@ -180,7 +180,7 @@ export default function NeuralNet() {
         {/* Left Col: Brain & Stats */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           <Tilt tiltEnable={!isMobile} tiltMaxAngleX={2} tiltMaxAngleY={2} scale={1.01} className="w-full">
-            <div className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
               <div className="w-full md:w-1/2">
                 <NodeGraph />
               </div>

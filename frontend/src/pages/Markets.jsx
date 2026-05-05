@@ -8,7 +8,7 @@ const MarketCard = ({ title, value, change, isPositive }) => {
 
   return (
     <Tilt tiltEnable={!isMobile} tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} className="w-full h-full">
-      <div className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden h-[160px] sm:h-[180px]">
+      <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden h-[160px] sm:h-[180px]">
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
         <div>
           <h3 className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">{title}</h3>
@@ -55,7 +55,7 @@ export default function Markets() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
+        <div className="bg-slate-900 border border-white/10 rounded-2xl p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
           <h2 className="text-sm sm:text-lg font-black text-slate-400 uppercase tracking-widest mb-8 sm:mb-12">Global AI Sentiment</h2>
           

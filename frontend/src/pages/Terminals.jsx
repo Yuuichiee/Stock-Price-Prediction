@@ -38,8 +38,8 @@ const MiniTerminal = ({ title, symbol, startPrice, color, volatility }) => {
   const isUp = data[data.length - 1].value >= data[data.length - 2].value;
 
   return (
-    <Tilt tiltEnable={!isMobile} tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="w-full h-full">
-      <div className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 sm:p-6 h-64 sm:h-72 flex flex-col shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] overflow-hidden relative group">
+    <div className="w-full h-full transform-gpu transition-transform hover:scale-[1.01] duration-300">
+      <div className="bg-slate-900 border border-white/10 rounded-2xl p-5 sm:p-6 h-64 sm:h-72 flex flex-col shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] overflow-hidden relative group">
         <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500`} style={{ backgroundColor: color }} />
         
         <div className="flex justify-between items-start mb-4 relative z-10">
@@ -80,7 +80,7 @@ const MiniTerminal = ({ title, symbol, startPrice, color, volatility }) => {
           </ResponsiveContainer>
         </div>
       </div>
-    </Tilt>
+    </div>
   );
 };
 

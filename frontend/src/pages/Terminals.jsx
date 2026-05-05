@@ -1,40 +1,137 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { Terminal, Activity, Zap } from 'lucide-react';
+import { Terminal as TerminalIcon, Activity, Zap } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, YAxis } from 'recharts';
 import Tilt from 'react-parallax-tilt';
 
-export default function Terminals() {
+const generateData = (startPrice, volatility) => {
+  let current = startPrice;
+  return Array.from({ length: 40 }, (_, i) => {
+    current = current + (Math.random() - 0.5) * volatility;
+    return { value: current };
+  });
+};
+
+const MiniTerminal = ({ title, symbol, startPrice, color, volatility }) => {
+  const [data, setData] = useState(() => generateData(startPrice, volatility));
+  const [currentPrice, setCurrentPrice] = useState(startPrice);
+  const [isMobile] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData(prev => {
+        const lastVal = prev[prev.length - 1].value;
+        const newVal = lastVal + (Math.random() - 0.5) * volatility;
+        setCurrentPrice(newVal);
+        return [...prev.slice(1), { value: newVal }];
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [volatility]);
+
+  const isUp = data[data.length - 1].value >= data[data.length - 2].value;
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 lg:px-8 py-12 relative z-10 flex flex-col items-center justify-center min-h-[70vh]">
-      <Motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="w-full max-w-3xl"
-      >
-        <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} transitionSpeed={800} className="w-full">
-          <div className="relative bg-slate-900/70 backdrop-blur-2xl border border-white/8 p-10 rounded-2xl shadow-2xl overflow-hidden text-center flex flex-col items-center">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl mb-8 relative z-10 shadow-lg">
-              <Terminal className="w-12 h-12 text-blue-400" />
+    <Tilt tiltEnable={!isMobile} tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="w-full h-full">
+      <div className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 sm:p-6 h-64 sm:h-72 flex flex-col shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] overflow-hidden relative group">
+        <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500`} style={{ backgroundColor: color }} />
+        
+        <div className="flex justify-between items-start mb-4 relative z-10">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">{symbol}</h3>
+            <p className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-[0.2em]">{title}</p>
+          </div>
+          <div className="text-right">
+            <div className={`text-xl sm:text-2xl font-black ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
+              ${currentPrice.toFixed(2)}
             </div>
-
-            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 uppercase tracking-tighter mb-4 relative z-10">
-              Terminal Access
-            </h1>
-            
-            <p className="text-slate-400 max-w-lg mx-auto text-sm leading-relaxed mb-8 relative z-10 font-mono">
-              Raw data streams and CLI access are currently being initialized. Please stand by for secure uplink to the central trading cluster.
-            </p>
-
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 text-xs font-black uppercase tracking-[0.2em] relative z-10">
-              <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-              Initializing Uplink...
+            <div className={`text-[10px] sm:text-xs font-bold ${isUp ? 'text-emerald-500' : 'text-red-500'}`}>
+              {isUp ? '+' : ''}{(currentPrice - startPrice).toFixed(2)} ({( ((currentPrice - startPrice) / startPrice) * 100 ).toFixed(2)}%)
             </div>
           </div>
-        </Tilt>
+        </div>
+        
+        <div className="flex-1 -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 mt-2 relative z-0 opacity-80 group-hover:opacity-100 transition-opacity">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id={`gradient-${symbol}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <YAxis domain={['dataMin - 2', 'dataMax + 2']} hide />
+              <Area 
+                type="monotone" 
+                dataKey="value" 
+                stroke={color} 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill={`url(#gradient-${symbol})`} 
+                isAnimationActive={false} 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </Tilt>
+  );
+};
+
+export default function Terminals() {
+  const container = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative z-10">
+      <Motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8 sm:mb-12"
+      >
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+          <TerminalIcon className="w-3.5 h-3.5" /> Live Data Streams
+        </div>
+        <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 uppercase tracking-tighter">
+          Global Terminal Grid
+        </h1>
+        <p className="text-slate-400 mt-2 text-sm max-w-xl">
+          High-frequency simulated tick data for multi-asset monitoring.
+        </p>
+      </Motion.div>
+
+      <Motion.div 
+        variants={container}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
+      >
+        <Motion.div variants={item}>
+          <MiniTerminal title="Apple Inc." symbol="AAPL" startPrice={175.50} color="#3b82f6" volatility={1.2} />
+        </Motion.div>
+        <Motion.div variants={item}>
+          <MiniTerminal title="Tesla, Inc." symbol="TSLA" startPrice={198.20} color="#10b981" volatility={2.5} />
+        </Motion.div>
+        <Motion.div variants={item}>
+          <MiniTerminal title="NVIDIA Corp." symbol="NVDA" startPrice={850.10} color="#8b5cf6" volatility={5.0} />
+        </Motion.div>
+        <Motion.div variants={item}>
+          <MiniTerminal title="Bitcoin" symbol="BTC-USD" startPrice={64500.00} color="#f59e0b" volatility={150.0} />
+        </Motion.div>
       </Motion.div>
     </div>
   );

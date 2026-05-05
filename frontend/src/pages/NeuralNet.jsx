@@ -1,41 +1,184 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { Cpu, Network, Database } from 'lucide-react';
+import { Cpu, Network, Database, Code2, Terminal } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 
+const FAKE_LOGS = [
+  "[SYS] Initializing Random Forest regressor...",
+  "[SYS] Loading historical dataset: TSLA (10 years)...",
+  "[OK] Data loaded. Shape: (2518, 12).",
+  "[SYS] Extracting features: SMA_20, RSI_14, MACD...",
+  "[OK] Feature engineering complete.",
+  "[SYS] Building ensemble trees (n_estimators=100)...",
+  "[NET] Tree 1/100 active.",
+  "[NET] Tree 25/100 active.",
+  "[NET] Tree 50/100 active.",
+  "[NET] Tree 100/100 active.",
+  "[OK] Ensemble complete. Mean Absolute Error: 1.2%.",
+  "[SYS] Connecting to live data stream...",
+  "[OK] Connection stable. Ready for prediction."
+];
+
+const NodeGraph = () => (
+  <div className="relative w-full max-w-sm mx-auto aspect-square flex items-center justify-center pointer-events-none">
+    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+      <Motion.path
+        d="M 50 15 L 25 45 L 50 85 L 75 45 Z"
+        fill="none"
+        stroke="rgba(16, 185, 129, 0.2)"
+        strokeWidth="1"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+      />
+      <Motion.path
+        d="M 25 45 L 75 45"
+        fill="none"
+        stroke="rgba(16, 185, 129, 0.2)"
+        strokeWidth="1"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.5 }}
+      />
+      <Motion.path
+        d="M 50 15 L 50 85"
+        fill="none"
+        stroke="rgba(16, 185, 129, 0.2)"
+        strokeWidth="1"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "linear", delay: 1 }}
+      />
+      {[
+        { x: 50, y: 15 },
+        { x: 25, y: 45 },
+        { x: 75, y: 45 },
+        { x: 50, y: 85 },
+        { x: 50, y: 45 }
+      ].map((node, i) => (
+        <Motion.circle
+          key={i}
+          cx={node.x}
+          cy={node.y}
+          r="2.5"
+          fill="#34d399"
+          className="filter drop-shadow-[0_0_8px_rgba(52,211,153,1)]"
+          animate={{ r: [2.5, 4, 2.5], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 1.5 + Math.random(), repeat: Infinity }}
+        />
+      ))}
+    </svg>
+    <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[80px]" />
+  </div>
+);
+
 export default function NeuralNet() {
+  const [logs, setLogs] = useState([]);
+  const [isMobile] = useState(() => window.innerWidth < 768);
+  const logEndRef = useRef(null);
+
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < FAKE_LOGS.length) {
+        setLogs(prev => [...prev, FAKE_LOGS[i]]);
+        i++;
+      } else {
+        // Loop back for endless effect
+        setTimeout(() => setLogs([]), 5000);
+        i = 0;
+      }
+    }, 800);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 lg:px-8 py-12 relative z-10 flex flex-col items-center justify-center min-h-[70vh]">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative z-10">
       <Motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="w-full max-w-3xl"
+        transition={{ duration: 0.5 }}
+        className="mb-8 sm:mb-12"
       >
-        <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} transitionSpeed={800} className="w-full">
-          <div className="relative bg-slate-900/70 backdrop-blur-2xl border border-emerald-500/20 p-10 rounded-2xl shadow-[0_20px_50px_rgba(16,185,129,0.1)] overflow-hidden text-center flex flex-col items-center">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-600/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl mb-8 relative z-10 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-              <Cpu className="w-12 h-12 text-emerald-400" />
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+          <Network className="w-3.5 h-3.5" /> Neural Engine Active
+        </div>
+        <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 uppercase tracking-tighter">
+          Model Telemetry
+        </h1>
+      </Motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Col: Brain & Stats */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          <Tilt tiltEnable={!isMobile} tiltMaxAngleX={2} tiltMaxAngleY={2} scale={1.01} className="w-full">
+            <div className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
+              <div className="w-full md:w-1/2">
+                <NodeGraph />
+              </div>
+              <div className="w-full md:w-1/2 flex flex-col justify-center space-y-6 relative z-10">
+                <div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-1">Random Forest</h3>
+                  <p className="text-xs text-slate-400 uppercase tracking-widest">Ensemble Model Status</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-950/50 border border-white/5 p-4 rounded-xl">
+                    <Database className="w-5 h-5 text-blue-400 mb-2" />
+                    <div className="text-lg font-black text-white">2.4M</div>
+                    <div className="text-[9px] text-slate-500 uppercase tracking-widest">Rows Digested</div>
+                  </div>
+                  <div className="bg-slate-950/50 border border-white/5 p-4 rounded-xl">
+                    <Cpu className="w-5 h-5 text-emerald-400 mb-2" />
+                    <div className="text-lg font-black text-white">100</div>
+                    <div className="text-[9px] text-slate-500 uppercase tracking-widest">Active Trees</div>
+                  </div>
+                  <div className="bg-slate-950/50 border border-white/5 p-4 rounded-xl col-span-2 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-black text-white">1.21%</div>
+                      <div className="text-[9px] text-slate-500 uppercase tracking-widest">Mean Absolute Error</div>
+                    </div>
+                    <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-[spin_3s_linear_infinite]" />
+                  </div>
+                </div>
+              </div>
             </div>
+          </Tilt>
+        </div>
 
-            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 uppercase tracking-tighter mb-4 relative z-10">
-              Neural Lattices
-            </h1>
-            
-            <p className="text-slate-400 max-w-lg mx-auto text-sm leading-relaxed mb-8 relative z-10 font-mono">
-              The core ML engine is currently training on localized data sets. Direct visualization of node weights and decision trees will be available shortly.
-            </p>
-
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-black uppercase tracking-[0.2em] relative z-10">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              Model Training Active
+        {/* Right Col: Logs */}
+        <div className="lg:col-span-5 flex flex-col h-[500px] lg:h-auto">
+          <div className="bg-slate-950 border border-white/10 rounded-2xl flex flex-col shadow-2xl h-full overflow-hidden">
+            <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-slate-900/50">
+              <Terminal className="w-4 h-4 text-slate-400" />
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Server Console</span>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2">
+              {logs.map((log, index) => (
+                <Motion.div 
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                >
+                  <span className="text-slate-500 mr-2">{new Date().toISOString().split('T')[1].slice(0,-1)}</span>
+                  {log}
+                </Motion.div>
+              ))}
+              <div ref={logEndRef} />
+              <Motion.div 
+                animate={{ opacity: [1, 0, 1] }} 
+                transition={{ duration: 1, repeat: Infinity }}
+                className="w-2 h-4 bg-emerald-400 inline-block align-middle ml-1"
+              />
             </div>
           </div>
-        </Tilt>
-      </Motion.div>
+        </div>
+
+      </div>
     </div>
   );
 }

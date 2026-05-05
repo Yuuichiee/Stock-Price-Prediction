@@ -343,7 +343,7 @@ export default function Layout({ user }) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden border-t border-white/5 bg-[#050c1f]/95 backdrop-blur-xl"
+              className="md:hidden overflow-hidden border-t border-white/5 bg-[#050c1f]"
             >
               <div className="px-4 py-4 space-y-2.5 relative z-50">
                 {NAV_ITEMS.map(item => (
@@ -370,14 +370,24 @@ export default function Layout({ user }) {
             </Motion.div>
           )}
         </AnimatePresence>
-          {/* Backdrop for mobile menu to prevent interacting with content below */}
-          {mobileMenuOpen && (
-            <div 
-              className="md:hidden fixed inset-0 top-16 z-30 bg-[#050c1f]/50 backdrop-blur-sm pointer-events-auto" 
-              onClick={() => setMobileMenuOpen(false)}
-            />
-          )}
       </Motion.header>
+
+      {/* Backdrop rendered OUTSIDE the header to avoid stacking context conflicts.
+          backdrop-blur intentionally removed — it was blurring the open menu itself. */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <Motion.div
+            key="mobile-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="md:hidden fixed inset-0 z-30 bg-black/60 pointer-events-auto"
+            style={{ top: '0' }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <div className="flex-1 relative z-10 w-full max-w-7xl mx-auto">
          <Outlet />

@@ -67,7 +67,11 @@ function Dashboard() {
       const data = await predictStock(selectedStock, timeHorizon);
       setResult(data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Prediction failed. Check backend.');
+      const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+      setError(
+        err.response?.data?.error ||
+        (isTimeout ? 'Backend is waking up (~30s). Please try again in a moment.' : 'Prediction failed. Check backend.')
+      );
     } finally {
       setLoading(false);
     }

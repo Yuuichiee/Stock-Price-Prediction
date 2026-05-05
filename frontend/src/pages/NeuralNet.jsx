@@ -181,9 +181,9 @@ export default function NeuralNet() {
         </div>
 
         {/* Right Col: Logs */}
-        <div className="lg:col-span-5 flex flex-col h-[500px] lg:h-auto">
+        <div className="lg:col-span-5 flex flex-col h-[400px] md:h-[500px]">
           <div className="bg-slate-950 border border-white/10 rounded-2xl flex flex-col shadow-2xl h-full overflow-hidden">
-            <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-slate-900/50">
+            <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-slate-900/50 shrink-0">
               <Terminal className="w-4 h-4 text-slate-400" />
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Server Console</span>
             </div>

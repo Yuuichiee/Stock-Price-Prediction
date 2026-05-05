@@ -1,23 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy, startTransition } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase';
-import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Dashboard';
 import Layout from './components/Layout';
-import Terminals from './pages/Terminals';
-import NeuralNet from './pages/NeuralNet';
-import Markets from './pages/Markets';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
 
-function LoadingScreen() {
+// Lazy-load every page — each becomes its own JS chunk.
+// React only parses + executes a page's code when you FIRST navigate to it.
+// This eliminates the "mounting everything at once" freeze on nav tap.
+const LoginPage  = lazy(() => import('./pages/LoginPage'));
+const Dashboard  = lazy(() => import('./pages/Dashboard'));
+const Terminals  = lazy(() => import('./pages/Terminals'));
+const NeuralNet  = lazy(() => import('./pages/NeuralNet'));
+const Markets    = lazy(() => import('./pages/Markets'));
+
+// Minimal fallback shown while a lazy page chunk loads (first visit only)
+function PageFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center"
-      style={{ background: 'linear-gradient(135deg, #020817, #050c1f)' }}>
-      <Motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-        className="w-12 h-12 rounded-full border-2 border-t-blue-500 border-slate-700"
-      />
+    <div className="flex-1 flex items-center justify-center" style={{ minHeight: '60vh' }}>
+      <div className="flex items-end gap-1.5" style={{ height: '36px' }}>
+        {[0,1,2,3,4].map(i => (
+          <div key={i} className="w-1.5 rounded-full bg-blue-500/60"
+            style={{ height:'100%', transformOrigin:'bottom',
+              animation:`eq-bar 1.1s ease-in-out ${(i*0.11).toFixed(2)}s infinite` }} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -42,35 +47,38 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (session === undefined) return <LoadingScreen />;
+  if (session === undefined) return (
+    <div className="min-h-screen flex items-center justify-center"
+      style={{ background: 'linear-gradient(135deg, #020817, #050c1f)' }}>
+      <div className="flex items-end gap-1.5" style={{ height: '36px' }}>
+        {[0,1,2,3,4].map(i => (
+          <div key={i} className="w-1.5 rounded-full bg-blue-500/60"
+            style={{ height:'100%', transformOrigin:'bottom',
+              animation:`eq-bar 1.1s ease-in-out ${(i*0.11).toFixed(2)}s infinite` }} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <Router>
-      <AnimatePresence mode="wait">
+      <Suspense fallback={<PageFallback />}>
         {session ? (
-          <Routes key="authenticated">
+          <Routes>
             <Route element={<Layout user={session.user} />}>
-              <Route path="/" element={
-                <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <Dashboard user={session.user} />
-                </Motion.div>
-              } />
-              <Route path="/terminals" element={<Terminals />} />
+              <Route path="/"            element={<Dashboard user={session.user} />} />
+              <Route path="/terminals"   element={<Terminals />} />
               <Route path="/neural-net" element={<NeuralNet />} />
-              <Route path="/markets" element={<Markets />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/markets"     element={<Markets />} />
+              <Route path="*"            element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
         ) : (
-          <Routes key="unauthenticated">
-            <Route path="*" element={
-              <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <LoginPage />
-              </Motion.div>
-            } />
+          <Routes>
+            <Route path="*" element={<LoginPage />} />
           </Routes>
         )}
-      </AnimatePresence>
+      </Suspense>
     </Router>
   );
 }

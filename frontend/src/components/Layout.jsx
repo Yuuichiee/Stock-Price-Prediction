@@ -32,6 +32,11 @@ function StarField() {
     const ctx = canvas.getContext('2d');
     let animId;
 
+    // Throttle to 30fps on mobile — halves canvas JS work, gives React room to breathe
+    const TARGET_FPS    = IS_MOBILE ? 30 : 60;
+    const FRAME_INTERVAL = 1000 / TARGET_FPS;
+    let lastFrame = 0;
+
     const resize = () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -39,8 +44,8 @@ function StarField() {
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    // Fewer particles on mobile — big win for low-end GPUs
-    const N = IS_MOBILE ? 50 : 90;
+    // Fewer particles on mobile
+    const N = IS_MOBILE ? 35 : 90;
     const P = Array.from({ length: N }, () => ({
       x:  Math.random() * window.innerWidth,
       y:  Math.random() * window.innerHeight,
@@ -50,7 +55,14 @@ function StarField() {
       op: Math.random() * 0.5 + 0.25,
     }));
 
-    const draw = () => {
+    const draw = (timestamp) => {
+      // Skip frame if we haven't hit our target interval
+      if (timestamp - lastFrame < FRAME_INTERVAL) {
+        animId = requestAnimationFrame(draw);
+        return;
+      }
+      lastFrame = timestamp;
+
       const W = canvas.width, H = canvas.height;
       const { x: mx, y: my, vx: mvx, vy: mvy } = mouseRef.current;
 
@@ -61,7 +73,6 @@ function StarField() {
         const p = P[idx];
         const dx   = mx - p.x;
         const dy   = my - p.y;
-        // Use squared distance to avoid sqrt on mobile (skip mouse interaction)
         let near = 0;
         if (!IS_MOBILE && mx > 0) {
           const distSq = dx * dx + dy * dy;
@@ -97,7 +108,6 @@ function StarField() {
         ctx.fill();
       }
 
-      // Mouse glow — desktop only
       if (!IS_MOBILE && mx > 0) {
         const grad = ctx.createRadialGradient(mx, my, 0, mx, my, 120);
         grad.addColorStop(0,   'rgba(99,102,241,0.07)');

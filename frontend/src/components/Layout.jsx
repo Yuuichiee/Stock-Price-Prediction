@@ -460,14 +460,40 @@ export default function Layout({ user }) {
         )}
       </AnimatePresence>
 
-      {/* Smooth entry only for sub-routes — Dashboard keeps its own entrance animations */}
+      {/* ── AMV Flash-Cut Overlay ────────────────────────────────────────
+           Fires on every sub-route change. A blue/indigo layer flashes
+           then instantly fades — the classic AMV "flash frame" between cuts. */}
+      <AnimatePresence>
+        {location.pathname !== '/' && (
+          <Motion.div
+            key={`flash-${location.pathname}`}
+            initial={{ opacity: 0.55 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            className="fixed inset-0 z-50 pointer-events-none"
+            style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.5) 0%, rgba(59,130,246,0.35) 50%, rgba(16,185,129,0.15) 100%)' }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Page Content / AMV Zoom-Burst Enter ──────────────────────────
+           Sub-routes: zoom up from 0.92 scale + blur-in (desktop only).
+           The spring easing [0.16,1,0.3,1] gives that snappy anime-cut pop.
+           Dashboard (/): instant, preserves its own stagger animations.  */}
       <AnimatePresence mode="sync" initial={false}>
         <Motion.div
           key={location.pathname}
-          initial={location.pathname !== '/' ? { opacity: 0, y: 14 } : false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={location.pathname !== '/' ? { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] } : { duration: 0 }}
+          initial={location.pathname !== '/'
+            ? { opacity: 0, scale: 0.92, filter: IS_MOBILE ? 'blur(0px)' : 'blur(6px)' }
+            : false
+          }
+          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          transition={location.pathname !== '/'
+            ? { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+            : { duration: 0 }
+          }
           className="flex-1 relative z-10 w-full max-w-7xl mx-auto"
+          style={{ willChange: 'transform, opacity' }}
         >
           <Outlet />
         </Motion.div>

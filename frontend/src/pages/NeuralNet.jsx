@@ -76,6 +76,12 @@ export default function NeuralNet() {
   const [logs, setLogs] = useState([]);
   const [isMobile] = useState(() => window.innerWidth < 768);
   const logContainerRef = useRef(null);
+  const autoScrollRef = useRef(true);
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    autoScrollRef.current = scrollHeight - scrollTop - clientHeight < 50;
+  };
 
   const [isBooting, setIsBooting] = useState(true);
 
@@ -115,7 +121,7 @@ export default function NeuralNet() {
   }, []);
 
   useEffect(() => {
-    if (logContainerRef.current) {
+    if (logContainerRef.current && autoScrollRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [logs]);
@@ -187,16 +193,16 @@ export default function NeuralNet() {
               <Terminal className="w-4 h-4 text-slate-400" />
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Server Console</span>
             </div>
-            <div ref={logContainerRef} className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2">
+            <div 
+              ref={logContainerRef} 
+              onScroll={handleScroll}
+              className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2"
+            >
               {logs.map((log, index) => (
-                <Motion.div 
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                >
+                <div key={index}>
                   <span className="text-slate-500 mr-2">{new Date().toISOString().split('T')[1].slice(0,-1)}</span>
                   {log}
-                </Motion.div>
+                </div>
               ))}
               <Motion.div 
                 animate={{ opacity: [1, 0, 1] }} 

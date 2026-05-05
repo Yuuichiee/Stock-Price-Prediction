@@ -10,7 +10,8 @@ import {
   Area
 } from 'recharts';
 
-export default function StockChart({ historical, predictions }) {
+export default function StockChart({ historical, predictions, symbol }) {
+  const currencySymbol = symbol?.endsWith('.NS') ? '₹' : '$';
   // Combine historical and predictions for a continuous chart
   // Add a "type" field to distinguish line color
   
@@ -82,9 +83,10 @@ export default function StockChart({ historical, predictions }) {
                   tickMargin={6}
                   width={46}
                   domain={['auto', 'auto']}
-                  tickFormatter={(value) => `$${Number(value).toFixed(0)}`}
+                  tickFormatter={(value) => `${currencySymbol}${Number(value).toFixed(0)}`}
                 />
                 <Tooltip 
+                  formatter={(value) => `${currencySymbol}${Number(value).toFixed(2)}`}
                   contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
                   itemStyle={{ color: '#f8fafc' }}
                   labelFormatter={(value) => `Date: ${value}`}

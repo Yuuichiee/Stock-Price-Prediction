@@ -93,6 +93,7 @@ function Dashboard() {
   const finalPrediction = result?.predictions?.at(-1);
   const lastHistorical = result?.historical?.at(-1)?.Close;
   const isGoodPrediction = finalPrediction && lastHistorical && (finalPrediction.Predicted_Close >= lastHistorical);
+  const currencySymbol = result?.symbol?.endsWith('.NS') ? '₹' : '$';
 
   const container = {
     hidden: { opacity: 0 },
@@ -272,7 +273,7 @@ function Dashboard() {
                         <div className="flex flex-col gap-0.5 pt-1">
                           <span className="text-slate-500 text-[10px] font-black uppercase tracking-[0.15em]">Projected Target</span>
                           <span className={`font-black text-transparent bg-clip-text text-4xl tracking-tighter ${isGoodPrediction ? 'bg-gradient-to-r from-emerald-400 to-cyan-400' : 'bg-gradient-to-r from-red-400 to-orange-400'}`}>
-                            {finalPrediction ? `$${Number(finalPrediction.Predicted_Close).toFixed(2)}` : 'N/A'}
+                            {finalPrediction ? `${currencySymbol}${Number(finalPrediction.Predicted_Close).toFixed(2)}` : 'N/A'}
                           </span>
                         </div>
                         {finalPrediction && lastHistorical && (
@@ -342,7 +343,7 @@ function Dashboard() {
                     </div>
                   </div>
                   <div className="flex-1 min-h-[320px] sm:min-h-[380px]">
-                    <StockChart historical={result.historical} predictions={result.predictions} />
+                    <StockChart historical={result.historical} predictions={result.predictions} symbol={result.symbol} />
                   </div>
                 </Motion.div>
               ) : (

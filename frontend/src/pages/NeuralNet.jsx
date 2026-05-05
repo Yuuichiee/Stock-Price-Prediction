@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { Cpu, Network, Database, Code2, Terminal, CheckCircle2 } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
@@ -19,7 +19,7 @@ const FAKE_LOGS = [
   "[OK] Connection stable. Ready for prediction."
 ];
 
-const NodeGraph = () => (
+const NodeGraph = React.memo(() => (
   <div className="relative w-full max-w-sm mx-auto aspect-square flex items-center justify-center pointer-events-none">
     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
       <Motion.path
@@ -70,11 +70,10 @@ const NodeGraph = () => (
     </svg>
     <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[80px]" />
   </div>
-);
+));
 
-export default function NeuralNet() {
+const ServerConsole = ({ onBootComplete }) => {
   const [logs, setLogs] = useState([]);
-  const [isMobile] = useState(() => window.innerWidth < 768);
   const logContainerRef = useRef(null);
   const autoScrollRef = useRef(true);
 
@@ -82,8 +81,6 @@ export default function NeuralNet() {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     autoScrollRef.current = scrollHeight - scrollTop - clientHeight < 50;
   };
-
-  const [isBooting, setIsBooting] = useState(true);
 
   useEffect(() => {
     let bootIndex = 0;
@@ -95,9 +92,8 @@ export default function NeuralNet() {
         bootIndex++;
       } else {
         clearInterval(bootInterval);
-        setIsBooting(false);
+        onBootComplete();
         
-        // Start "live polling" mode
         liveInterval = setInterval(() => {
            const ping = Math.floor(Math.random() * 50) + 12;
            const assets = ['TSLA', 'AAPL', 'NVDA', 'BTC-USD', 'NIFTY 50'];
@@ -108,7 +104,6 @@ export default function NeuralNet() {
              ? `[NET] Polling stream... Latency ${ping}ms.`
              : `[SYS] Validating ${randomAsset} trajectory. Mem usage: ${memory}GB.`;
              
-           // Keep max 30 logs to prevent infinite memory leak
            setLogs(prev => [...prev.slice(-30), newLog]); 
         }, 2500);
       }
@@ -118,13 +113,51 @@ export default function NeuralNet() {
       clearInterval(bootInterval);
       if (liveInterval) clearInterval(liveInterval);
     };
-  }, []);
+  }, [onBootComplete]);
 
   useEffect(() => {
     if (logContainerRef.current && autoScrollRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [logs]);
+
+  return (
+    <div className="lg:col-span-5 flex flex-col h-[400px] md:h-[500px]">
+      <div className="bg-slate-950 border border-white/10 rounded-2xl flex flex-col shadow-2xl h-full overflow-hidden">
+        <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-slate-900/50 shrink-0">
+          <Terminal className="w-4 h-4 text-slate-400" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Server Console</span>
+        </div>
+        <div 
+          ref={logContainerRef} 
+          onScroll={handleScroll}
+          className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2 transform-gpu will-change-[scroll-position] overscroll-contain"
+          style={{ contain: 'content' }}
+        >
+          {logs.map((log, index) => (
+            <div key={index}>
+              <span className="text-slate-500 mr-2">{new Date().toISOString().split('T')[1].slice(0,-1)}</span>
+              {log}
+            </div>
+          ))}
+          <Motion.div 
+            animate={{ opacity: [1, 0, 1] }} 
+            transition={{ duration: 1, repeat: Infinity }}
+            className="w-2 h-4 bg-emerald-400 inline-block align-middle ml-1"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function NeuralNet() {
+  const [isMobile] = useState(() => window.innerWidth < 768);
+  const [isBooting, setIsBooting] = useState(true);
+
+  const handleBootComplete = useCallback(() => {
+    setIsBooting(false);
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative z-10">
@@ -187,31 +220,7 @@ export default function NeuralNet() {
         </div>
 
         {/* Right Col: Logs */}
-        <div className="lg:col-span-5 flex flex-col h-[400px] md:h-[500px]">
-          <div className="bg-slate-950 border border-white/10 rounded-2xl flex flex-col shadow-2xl h-full overflow-hidden">
-            <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-slate-900/50 shrink-0">
-              <Terminal className="w-4 h-4 text-slate-400" />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Server Console</span>
-            </div>
-            <div 
-              ref={logContainerRef} 
-              onScroll={handleScroll}
-              className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2"
-            >
-              {logs.map((log, index) => (
-                <div key={index}>
-                  <span className="text-slate-500 mr-2">{new Date().toISOString().split('T')[1].slice(0,-1)}</span>
-                  {log}
-                </div>
-              ))}
-              <Motion.div 
-                animate={{ opacity: [1, 0, 1] }} 
-                transition={{ duration: 1, repeat: Infinity }}
-                className="w-2 h-4 bg-emerald-400 inline-block align-middle ml-1"
-              />
-            </div>
-          </div>
-        </div>
+        <ServerConsole onBootComplete={handleBootComplete} />
 
       </div>
     </div>

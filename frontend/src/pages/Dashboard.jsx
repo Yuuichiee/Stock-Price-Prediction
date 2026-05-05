@@ -29,7 +29,6 @@ function Dashboard() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  const spotlightRef = useRef(null);
 
   useEffect(() => {
     fetchStocks()
@@ -39,21 +38,11 @@ function Dashboard() {
       })
       .catch(() => setError('Failed to connect to backend. Is the server running?'));
 
-    // Direct DOM update — zero React re-renders on mouse move
-    const handle = (e) => {
-      if (spotlightRef.current) {
-        spotlightRef.current.style.background =
-          `radial-gradient(500px circle at ${e.clientX}px ${e.clientY}px, rgba(59,130,246,0.08), transparent 50%)`;
-      }
-    };
-    window.addEventListener('mousemove', handle, { passive: true });
-
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
     return () => {
-      window.removeEventListener('mousemove', handle);
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
@@ -162,10 +151,10 @@ function Dashboard() {
           {/* Left column: Controls + Result */}
           <div className="xl:col-span-4 flex flex-col gap-6">
             {/* Command Deck Card */}
-            <Tilt tiltEnable={!isMobile} glareEnable={!isMobile} tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1200} transitionSpeed={800} scale={1.01} glareMaxOpacity={0.08} glarePosition="all" className="rounded-xl sm:rounded-2xl">
+            <Tilt tiltEnable={!isMobile} tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1200} transitionSpeed={800} scale={1.01} className="rounded-xl sm:rounded-2xl">
               <Motion.div
                 variants={slideIn}
-                className="relative bg-slate-900/70 backdrop-blur-2xl border border-white/8 p-5 sm:p-7 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
+                className="relative bg-slate-900/70 backdrop-blur-xl border border-white/8 p-5 sm:p-7 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
               >
                 {/* Card glow */}
                 <div className="absolute top-0 right-0 w-52 h-52 bg-blue-600/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
@@ -256,7 +245,7 @@ function Dashboard() {
                   transition={{ type: 'spring', stiffness: 380, damping: 22 }}
                 >
                   <Tilt tiltEnable={!isMobile} tiltMaxAngleX={4} tiltMaxAngleY={4} scale={1.01} className="rounded-2xl">
-                    <div className="relative bg-slate-900/70 backdrop-blur-2xl border-2 border-emerald-500/25 p-7 rounded-2xl shadow-[0_20px_50px_rgba(16,185,129,0.12)] overflow-hidden">
+                    <div className="relative bg-slate-900/70 backdrop-blur-xl border-2 border-emerald-500/25 p-7 rounded-2xl shadow-[0_20px_50px_rgba(16,185,129,0.12)] overflow-hidden">
                       <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/20 blur-3xl pointer-events-none" />
                       <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Telemetry Acquired
@@ -304,7 +293,7 @@ function Dashboard() {
 
           {/* Right column: Chart area */}
           <Motion.div variants={pop} className="xl:col-span-8 flex flex-col">
-            <div className="relative bg-slate-900/60 backdrop-blur-2xl border border-white/8 p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl min-h-[380px] sm:min-h-[560px] flex flex-col overflow-hidden ring-1 ring-white/5 flex-1">
+            <div className="relative bg-slate-900/60 backdrop-blur-xl border border-white/8 p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl min-h-[380px] sm:min-h-[560px] flex flex-col overflow-hidden ring-1 ring-white/5 flex-1">
               <div className="absolute top-0 right-0 w-72 h-72 bg-blue-700/8 rounded-full blur-3xl pointer-events-none" />
 
               {loading ? (

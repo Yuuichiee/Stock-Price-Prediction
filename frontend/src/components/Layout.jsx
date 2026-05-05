@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Activity, Globe, LogOut, Menu, X } from 'lucide-react';
+import { Activity, LogOut, Menu, X } from 'lucide-react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 
@@ -159,6 +159,63 @@ const TICKER_DATA = [
   { sym: 'GOLD',      base: 2024.10  },
 ];
 
+// Animated anime-style AI logo — glowing core, orbiting nodes, rotating rings
+function PredictifiLogo() {
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 32, height: 32 }}>
+      {/* Ambient glow */}
+      <div style={{
+        position: 'absolute', inset: '-4px', borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)',
+        animation: 'logo-glow 2.5s ease-in-out infinite',
+        pointerEvents: 'none',
+      }} />
+      <svg viewBox="0 0 32 32" width="32" height="32" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Outer dashed ring — rotates CW */}
+        <circle cx="16" cy="16" r="14.5" fill="none"
+          stroke="rgba(99,102,241,0.6)" strokeWidth="0.8" strokeDasharray="2.5 2"
+          style={{ animation: 'logo-rotate 10s linear infinite', transformOrigin: '16px 16px' }} />
+        {/* Static middle ring */}
+        <circle cx="16" cy="16" r="10.5" fill="none" stroke="rgba(59,130,246,0.2)" strokeWidth="0.6" />
+        {/* Hexagon — counter-rotates */}
+        <polygon points="16,5 23.5,9.5 23.5,18.5 16,23 8.5,18.5 8.5,9.5"
+          fill="rgba(59,130,246,0.07)" stroke="rgba(96,165,250,0.65)" strokeWidth="0.9"
+          style={{ animation: 'logo-rotate-r 18s linear infinite', transformOrigin: '16px 16px' }} />
+        {/* Crosshair lines */}
+        <line x1="16" y1="6" x2="16" y2="12" stroke="rgba(147,197,253,0.5)" strokeWidth="0.7" />
+        <line x1="16" y1="20" x2="16" y2="26" stroke="rgba(147,197,253,0.5)" strokeWidth="0.7" />
+        <line x1="6" y1="16" x2="12" y2="16" stroke="rgba(147,197,253,0.5)" strokeWidth="0.7" />
+        <line x1="20" y1="16" x2="26" y2="16" stroke="rgba(147,197,253,0.5)" strokeWidth="0.7" />
+        {/* Orbiting node 1 — blue, fast */}
+        <circle cx="16" cy="3.5" r="1.6" fill="#60a5fa"
+          style={{ animation: 'logo-rotate 4s linear infinite', transformOrigin: '16px 16px',
+            filter: 'drop-shadow(0 0 3px #60a5fa)' }} />
+        {/* Orbiting node 2 — teal, slow reverse */}
+        <circle cx="28" cy="22" r="1.2" fill="#34d399"
+          style={{ animation: 'logo-rotate-r 7s linear infinite', transformOrigin: '16px 16px',
+            filter: 'drop-shadow(0 0 2px #34d399)' }} />
+        {/* Orbiting node 3 — indigo */}
+        <circle cx="4" cy="22" r="1.1" fill="#818cf8"
+          style={{ animation: 'logo-rotate 5.5s linear infinite', transformOrigin: '16px 16px' }} />
+        {/* Glowing core */}
+        <circle cx="16" cy="16" r="4" fill="url(#predCore)"
+          style={{ animation: 'logo-core-pulse 2s ease-in-out infinite',
+            transformBox: 'fill-box', transformOrigin: 'center' }} />
+        {/* Center dot */}
+        <circle cx="16" cy="16" r="1.4" fill="white" opacity="0.95" />
+        <defs>
+          <radialGradient id="predCore" cx="35%" cy="35%">
+            <stop offset="0%" stopColor="#bfdbfe" />
+            <stop offset="55%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#1e40af" />
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+}
+
+
 const NAV_ITEMS = [
   { name: 'Terminals', path: '/terminals',  prefetch: () => import('../pages/Terminals')  },
   { name: 'Neural Net', path: '/neural-net', prefetch: () => import('../pages/NeuralNet')  },
@@ -299,8 +356,8 @@ export default function Layout({ user }) {
             <Motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-500 blur-md opacity-30 group-hover:opacity-70 transition-opacity rounded-xl" />
-                <div className="relative p-2 bg-slate-800/80 border border-slate-700/60 rounded-lg">
-                  <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                <div className="relative p-1.5 bg-slate-800/80 border border-slate-700/60 rounded-lg">
+                  <PredictifiLogo />
                 </div>
               </div>
               <span className="text-base sm:text-xl font-black tracking-tighter text-white whitespace-nowrap">
@@ -403,14 +460,13 @@ export default function Layout({ user }) {
         )}
       </AnimatePresence>
 
-      {/* Page content — keyed by pathname so AnimatePresence animates each route change */}
+      {/* Smooth entry only for sub-routes — Dashboard keeps its own entrance animations */}
       <AnimatePresence mode="sync" initial={false}>
         <Motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 14 }}
+          initial={location.pathname !== '/' ? { opacity: 0, y: 14 } : false}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={location.pathname !== '/' ? { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] } : { duration: 0 }}
           className="flex-1 relative z-10 w-full max-w-7xl mx-auto"
         >
           <Outlet />

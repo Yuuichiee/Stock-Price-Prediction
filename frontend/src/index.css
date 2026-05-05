@@ -46,10 +46,22 @@ html, body {
   animation: orb-pulse 6s ease-in-out infinite;
 }
 
-/* Equalizer bar loader — scaleY is GPU composited (no layout reflow) */
+/* Equalizer bar loader */
 @keyframes eq-bar {
   0%, 100% { transform: scaleY(0.15); }
   50%       { transform: scaleY(1);    }
+}
+
+/* PredictifiLogo animations */
+@keyframes logo-rotate   { to { transform: rotate(360deg);  } }
+@keyframes logo-rotate-r { to { transform: rotate(-360deg); } }
+@keyframes logo-glow {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%       { opacity: 0.9; transform: scale(1.15); }
+}
+@keyframes logo-core-pulse {
+  0%, 100% { transform: scale(0.92); opacity: 0.85; }
+  50%       { transform: scale(1.1);  opacity: 1;    }
 }
 
 /* Custom scrollbar */

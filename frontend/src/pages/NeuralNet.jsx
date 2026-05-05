@@ -75,7 +75,7 @@ const NodeGraph = () => (
 export default function NeuralNet() {
   const [logs, setLogs] = useState([]);
   const [isMobile] = useState(() => window.innerWidth < 768);
-  const logEndRef = useRef(null);
+  const logContainerRef = useRef(null);
 
   useEffect(() => {
     let i = 0;
@@ -93,7 +93,9 @@ export default function NeuralNet() {
   }, []);
 
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+    }
   }, [logs]);
 
   return (
@@ -157,7 +159,7 @@ export default function NeuralNet() {
               <Terminal className="w-4 h-4 text-slate-400" />
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Server Console</span>
             </div>
-            <div className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2">
+            <div ref={logContainerRef} className="p-4 overflow-y-auto flex-1 font-mono text-xs sm:text-sm text-emerald-400/80 leading-relaxed space-y-2">
               {logs.map((log, index) => (
                 <Motion.div 
                   key={index}
@@ -168,7 +170,6 @@ export default function NeuralNet() {
                   {log}
                 </Motion.div>
               ))}
-              <div ref={logEndRef} />
               <Motion.div 
                 animate={{ opacity: [1, 0, 1] }} 
                 transition={{ duration: 1, repeat: Infinity }}

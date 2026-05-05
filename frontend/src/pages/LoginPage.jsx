@@ -84,7 +84,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden text-white font-sans px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden text-white font-sans px-4 py-6 sm:py-8">
       <StarField />
 
       {/* Glow blobs */}
@@ -112,7 +112,7 @@ export default function LoginPage() {
           {/* Top gradient bar */}
           <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500" />
 
-          <div className="p-5 sm:p-8">
+          <div className="p-4 sm:p-8">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
               <div className="relative">
@@ -121,7 +121,7 @@ export default function LoginPage() {
                   <Globe className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
-              <span className="text-xl font-black tracking-tighter">
+              <span className="text-xl font-black tracking-tighter whitespace-nowrap">
                 PREDICTIFI<span className="text-blue-500">.AI</span>
               </span>
             </div>
@@ -134,7 +134,7 @@ export default function LoginPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: mode === 'login' ? 20 : -20 }}
                 transition={{ duration: 0.25 }}
-                className="mb-7"
+                className="mb-6 sm:mb-7"
               >
                 <h1 className="text-2xl sm:text-3xl font-black tracking-tighter mb-1">
                   {mode === 'login' ? 'Welcome back' : 'Create account'}
@@ -236,7 +236,7 @@ export default function LoginPage() {
                 whileTap={{ scale: 0.97 }}
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm uppercase tracking-[0.12em] sm:tracking-[0.18em] rounded-lg transition-all shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] border border-white/10 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full mt-2 py-3.5 sm:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm uppercase tracking-[0.12em] sm:tracking-[0.18em] rounded-lg transition-all shadow-md sm:shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] border border-white/10 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <Motion.div
@@ -254,8 +254,8 @@ export default function LoginPage() {
             </form>
 
             {/* Toggle */}
-            <div className="mt-6 text-center text-sm text-slate-500">
-              {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            <div className="mt-5 sm:mt-6 text-center text-sm text-slate-500 flex flex-col sm:flex-row items-center justify-center gap-1">
+              <span>{mode === 'login' ? "Don't have an account? " : 'Already have an account? '}</span>
               <button
                 onClick={toggleMode}
                 className="text-blue-400 font-bold hover:text-blue-300 transition-colors"
@@ -265,8 +265,8 @@ export default function LoginPage() {
             </div>
 
             {/* Badge */}
-            <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-center gap-2 text-[10px] text-slate-600 uppercase tracking-widest">
-              <Zap className="w-3 h-3 text-slate-700" />
+            <div className="mt-5 sm:mt-6 pt-5 border-t border-white/5 flex flex-wrap items-center justify-center gap-1.5 text-[11px] sm:text-xs text-slate-500 uppercase tracking-widest text-center">
+              <Zap className="w-3 h-3 text-slate-600" />
               Secured by Supabase Auth
             </div>
           </div>

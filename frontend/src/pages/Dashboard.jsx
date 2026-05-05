@@ -92,7 +92,7 @@ function Dashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
             Live Neural Prediction Engine
           </div>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 leading-[1] sm:leading-[0.95] mb-6">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 leading-[1.1] sm:leading-[0.95] mb-6 break-words">
             The Future of<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400">
               Market Intelligence
@@ -177,7 +177,7 @@ function Dashboard() {
                           key={h}
                           type="button"
                           onClick={() => setTimeHorizon(h)}
-                          className={`relative py-2.5 text-xs font-black uppercase tracking-widest rounded-md transition-all ${timeHorizon === h ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                          className={`relative py-2 sm:py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest rounded-md transition-all ${timeHorizon === h ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                           {timeHorizon === h && (
                             <Motion.span layoutId="horizon-tab" className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-md -z-10" />
@@ -250,8 +250,8 @@ function Dashboard() {
           </div>
 
           {/* Right column: Chart area */}
-          <Motion.div variants={pop} className="xl:col-span-8">
-            <div className="relative bg-slate-900/60 backdrop-blur-2xl border border-white/8 p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl min-h-[430px] sm:min-h-[560px] flex flex-col overflow-hidden ring-1 ring-white/5">
+          <Motion.div variants={pop} className="xl:col-span-8 flex flex-col">
+            <div className="relative bg-slate-900/60 backdrop-blur-2xl border border-white/8 p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl min-h-[380px] sm:min-h-[560px] flex flex-col overflow-hidden ring-1 ring-white/5 flex-1">
               <div className="absolute top-0 right-0 w-72 h-72 bg-blue-700/8 rounded-full blur-3xl pointer-events-none" />
 
               {loading ? (
@@ -346,10 +346,10 @@ function Dashboard() {
                     hidden: { opacity: 0, y: 20 },
                     visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
                   }}
-                  className="relative bg-slate-900/70 backdrop-blur-xl border border-white/6 p-8 rounded-2xl h-full hover:border-white/15 transition-all shadow-xl group overflow-hidden cursor-default"
+                  className="relative bg-slate-900/70 backdrop-blur-xl border border-white/6 p-6 sm:p-8 rounded-2xl h-full hover:border-white/15 transition-all shadow-lg sm:shadow-xl group overflow-hidden cursor-default"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-white/4 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                  <div className={`p-3.5 bg-gradient-to-br ${f.color} w-fit rounded-2xl mb-6 shadow-lg ${f.shadow} text-white group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300`}>
+                  <div className={`p-3.5 bg-gradient-to-br ${f.color} w-fit rounded-2xl mb-6 shadow-md sm:shadow-lg ${f.shadow} text-white group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300`}>
                     {f.icon}
                   </div>
                   <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-3">{f.title}</h3>

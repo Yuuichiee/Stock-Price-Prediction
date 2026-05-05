@@ -271,7 +271,7 @@ export default function Layout({ user }) {
                   <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                 </div>
               </div>
-              <span className="text-base sm:text-xl font-black tracking-tighter text-white">
+              <span className="text-base sm:text-xl font-black tracking-tighter text-white whitespace-nowrap">
                 PREDICTIFI<span className="text-blue-500">.AI</span>
               </span>
             </Motion.div>
@@ -325,7 +325,7 @@ export default function Layout({ user }) {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden overflow-hidden border-t border-white/5 bg-[#050c1f]/95 backdrop-blur-xl"
             >
-              <div className="px-4 py-4 space-y-3">
+              <div className="px-4 py-4 space-y-2.5 relative z-50">
                 {NAV_ITEMS.map(item => (
                   <Link
                     key={item.name}
@@ -350,6 +350,13 @@ export default function Layout({ user }) {
             </Motion.div>
           )}
         </AnimatePresence>
+          {/* Backdrop for mobile menu to prevent interacting with content below */}
+          {mobileMenuOpen && (
+            <div 
+              className="md:hidden fixed inset-0 top-16 z-30 bg-[#050c1f]/50 backdrop-blur-sm pointer-events-auto" 
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          )}
       </Motion.header>
 
       <div className="flex-1 relative z-10 w-full max-w-7xl mx-auto">
@@ -357,8 +364,9 @@ export default function Layout({ user }) {
       </div>
 
       <footer className="border-t border-white/5 mt-8 py-8 relative z-10 w-full">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center text-slate-600 text-xs font-mono tracking-widest">
-          PREDICTIFI.AI © 2025 — NEURAL LATTICE v2.0 — ALL HORIZONS CLEARED
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center text-slate-500 text-[10px] sm:text-xs font-mono tracking-[0.1em] sm:tracking-widest flex flex-col sm:block gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+          <span>PREDICTIFI.AI © 2025 — </span>
+          <span className="text-slate-600">NEURAL LATTICE v2.0 — ALL HORIZONS CLEARED</span>
         </div>
       </footer>
     </div>

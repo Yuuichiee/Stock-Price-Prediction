@@ -32,7 +32,7 @@ POPULAR_STOCKS = [
     {"symbol": "HINDUNILVR.NS", "name": "Hindustan Unilever"},
     {"symbol": "KOTAKBANK.NS", "name": "Kotak Mahindra Bank"},
     {"symbol": "MARUTI.NS", "name": "Maruti Suzuki India"},
-    {"symbol": "TATAMOTORS.NS", "name": "Tata Motors Ltd."},
+    {"symbol": "TATASTEEL.NS", "name": "Tata Steel Ltd."},
     {"symbol": "SUNPHARMA.NS", "name": "Sun Pharmaceutical"},
     {"symbol": "TITAN.NS", "name": "Titan Company Ltd."},
     {"symbol": "ULTRACEMCO.NS", "name": "UltraTech Cement"},
@@ -59,7 +59,7 @@ def predict_stock():
         # Fetch data
         df = model_utils.fetch_data(symbol)
         if df.empty:
-            return jsonify({"error": "Failed to fetch stock data"}), 404
+            return jsonify({"error": "Failed to fetch data. This instrument is currently unavailable, please select another stock."}), 404
             
         # Preprocess and Engineer Features
         df = model_utils.preprocess_and_engineer_features(df)

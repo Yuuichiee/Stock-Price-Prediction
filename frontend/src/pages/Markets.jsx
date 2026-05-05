@@ -72,6 +72,7 @@ export default function Markets() {
                   <stop offset="50%" stopColor="#eab308" />
                   <stop offset="100%" stopColor="#10b981" />
                 </linearGradient>
+              </defs>
             </svg>
 
             {/* Hardware Accelerated HTML Needle */}

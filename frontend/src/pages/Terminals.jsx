@@ -89,13 +89,29 @@ const MiniTerminal = React.memo(({ title, symbol, startPrice, color, volatility 
 
 
 export default function Terminals() {
-  const container = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
+  // Defer Recharts mount until after first paint.
+  // Recharts ResponsiveContainer uses ResizeObserver — 4 of them firing
+  // simultaneously on mount is the main cause of the nav freeze.
+  const [chartsReady, setChartsReady] = useState(false);
 
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setChartsReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const TERMINALS = [
+    { title: 'Apple Inc.',   symbol: 'AAPL',    startPrice: 175.50,   color: '#3b82f6', volatility: 1.2   },
+    { title: 'Tesla, Inc.',  symbol: 'TSLA',    startPrice: 198.20,   color: '#10b981', volatility: 2.5   },
+    { title: 'NVIDIA Corp.', symbol: 'NVDA',    startPrice: 850.10,   color: '#8b5cf6', volatility: 5.0   },
+    { title: 'Bitcoin',      symbol: 'BTC-USD', startPrice: 64500.00, color: '#f59e0b', volatility: 150.0 },
+  ];
+
+  const container = {
+    hidden:  { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
   const item = {
-    hidden: { opacity: 0, y: 20 },
+    hidden:  { opacity: 0, y: 16 },
     visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
 
@@ -104,7 +120,7 @@ export default function Terminals() {
       <Motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
         className="mb-8 sm:mb-12"
       >
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
@@ -118,24 +134,32 @@ export default function Terminals() {
         </p>
       </Motion.div>
 
-      <Motion.div 
+      <Motion.div
         variants={container}
         initial="hidden"
         animate="visible"
         className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
       >
-        <Motion.div variants={item}>
-          <MiniTerminal title="Apple Inc." symbol="AAPL" startPrice={175.50} color="#3b82f6" volatility={1.2} />
-        </Motion.div>
-        <Motion.div variants={item}>
-          <MiniTerminal title="Tesla, Inc." symbol="TSLA" startPrice={198.20} color="#10b981" volatility={2.5} />
-        </Motion.div>
-        <Motion.div variants={item}>
-          <MiniTerminal title="NVIDIA Corp." symbol="NVDA" startPrice={850.10} color="#8b5cf6" volatility={5.0} />
-        </Motion.div>
-        <Motion.div variants={item}>
-          <MiniTerminal title="Bitcoin" symbol="BTC-USD" startPrice={64500.00} color="#f59e0b" volatility={150.0} />
-        </Motion.div>
+        {TERMINALS.map((t) => (
+          <Motion.div key={t.symbol} variants={item}>
+            {chartsReady
+              ? <MiniTerminal {...t} />
+              : (
+                /* Skeleton shown on first render — no Recharts, no ResizeObserver */
+                <div className="bg-slate-900 border border-white/10 rounded-2xl p-5 sm:p-6 h-64 sm:h-72 flex flex-col shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)]">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="text-xl font-black text-white">{t.symbol}</div>
+                      <div className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">{t.title}</div>
+                    </div>
+                    <div className="w-24 h-7 bg-slate-800 rounded animate-pulse" />
+                  </div>
+                  <div className="flex-1 rounded-xl bg-slate-800/40 animate-pulse" />
+                </div>
+              )
+            }
+          </Motion.div>
+        ))}
       </Motion.div>
     </div>
   );

@@ -29,47 +29,35 @@ const NODE_POSITIONS = [
 // Pre-computed stable durations — Math.random() in JSX props causes new values every render
 const NODE_DURATIONS = [1.5, 2.2, 1.8, 2.5, 2.0];
 
-const NodeGraph = React.memo(() => (
+// animated=false on first render → static SVG, no Framer Motion overhead
+const NodeGraph = React.memo(({ animated }) => (
   <div className="relative w-full max-w-sm mx-auto aspect-square flex items-center justify-center pointer-events-none">
     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-      <Motion.path
-        d="M 50 15 L 25 45 L 50 85 L 75 45 Z"
-        fill="none"
-        stroke="rgba(16, 185, 129, 0.2)"
-        strokeWidth="1"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-      />
-      <Motion.path
-        d="M 25 45 L 75 45"
-        fill="none"
-        stroke="rgba(16, 185, 129, 0.2)"
-        strokeWidth="1"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.5 }}
-      />
-      <Motion.path
-        d="M 50 15 L 50 85"
-        fill="none"
-        stroke="rgba(16, 185, 129, 0.2)"
-        strokeWidth="1"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "linear", delay: 1 }}
-      />
+      {animated ? (
+        <>
+          <Motion.path d="M 50 15 L 25 45 L 50 85 L 75 45 Z" fill="none" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1"
+            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} />
+          <Motion.path d="M 25 45 L 75 45" fill="none" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1"
+            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.5 }} />
+          <Motion.path d="M 50 15 L 50 85" fill="none" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1"
+            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear", delay: 1 }} />
+        </>
+      ) : (
+        <>
+          <path d="M 50 15 L 25 45 L 50 85 L 75 45 Z" fill="none" stroke="rgba(16, 185, 129, 0.15)" strokeWidth="1" />
+          <path d="M 25 45 L 75 45" fill="none" stroke="rgba(16, 185, 129, 0.15)" strokeWidth="1" />
+          <path d="M 50 15 L 50 85" fill="none" stroke="rgba(16, 185, 129, 0.15)" strokeWidth="1" />
+        </>
+      )}
       {NODE_POSITIONS.map((node, i) => (
-        <Motion.circle
-          key={i}
-          cx={node.x}
-          cy={node.y}
-          r="2.5"
-          fill="#34d399"
-          className="filter drop-shadow-[0_0_8px_rgba(52,211,153,1)]"
-          animate={{ r: [2.5, 4, 2.5], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: NODE_DURATIONS[i], repeat: Infinity }}
-        />
+        animated ? (
+          <Motion.circle key={i} cx={node.x} cy={node.y} r="2.5" fill="#34d399"
+            className="filter drop-shadow-[0_0_8px_rgba(52,211,153,1)]"
+            animate={{ r: [2.5, 4, 2.5], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: NODE_DURATIONS[i], repeat: Infinity }} />
+        ) : (
+          <circle key={i} cx={node.x} cy={node.y} r="2.5" fill="#34d399" opacity="0.6" />
+        )
       ))}
     </svg>
     <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[80px]" />
@@ -167,6 +155,13 @@ export default function NeuralNet() {
     setIsBooting(false);
   }, []);
 
+  // Defer 8 concurrent Framer Motion SVG animations until after first paint
+  const [graphReady, setGraphReady] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setGraphReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative z-10">
       <Motion.div
@@ -190,7 +185,7 @@ export default function NeuralNet() {
           <Tilt tiltEnable={!IS_MOBILE} tiltMaxAngleX={2} tiltMaxAngleY={2} scale={1.01} className="w-full">
             <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
               <div className="w-full md:w-1/2">
-                <NodeGraph />
+                <NodeGraph animated={graphReady} />
               </div>
               <div className="w-full md:w-1/2 flex flex-col justify-center space-y-6 relative z-10">
                 <div>

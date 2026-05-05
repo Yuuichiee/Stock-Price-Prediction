@@ -160,9 +160,9 @@ const TICKER_DATA = [
 ];
 
 const NAV_ITEMS = [
-  { name: 'Terminals', path: '/terminals' },
-  { name: 'Neural Net', path: '/neural-net' },
-  { name: 'Markets', path: '/markets' },
+  { name: 'Terminals', path: '/terminals',  prefetch: () => import('../pages/Terminals')  },
+  { name: 'Neural Net', path: '/neural-net', prefetch: () => import('../pages/NeuralNet')  },
+  { name: 'Markets',   path: '/markets',    prefetch: () => import('../pages/Markets')    },
 ];
 
 function LiveTicker() {
@@ -278,9 +278,10 @@ export default function Layout({ user }) {
     <div className="min-h-screen text-slate-50 font-sans selection:bg-blue-500/30 overflow-x-hidden relative flex flex-col">
       <StarField />
 
-      <FloatingOrb className="w-[500px] h-[500px] bg-blue-700/20" style={{ top: '-10%', left: '-10%' }} />
-      <FloatingOrb className="w-[400px] h-[400px] bg-indigo-600/15" style={{ top: '30%', right: '-8%' }} />
-      <FloatingOrb className="w-[300px] h-[300px] bg-emerald-600/10" style={{ bottom: '10%', left: '20%' }} />
+      {/* FloatingOrbs hidden on mobile — large blur-3xl GPU layers cause paint spikes during navigation */}
+      {!IS_MOBILE && <FloatingOrb className="w-[500px] h-[500px] bg-blue-700/20" style={{ top: '-10%', left: '-10%' }} />}
+      {!IS_MOBILE && <FloatingOrb className="w-[400px] h-[400px] bg-indigo-600/15" style={{ top: '30%', right: '-8%' }} />}
+      {!IS_MOBILE && <FloatingOrb className="w-[300px] h-[300px] bg-emerald-600/10" style={{ bottom: '10%', left: '20%' }} />}
 
       <div ref={spotlightRef} className="pointer-events-none fixed inset-0 z-0" />
 
@@ -309,7 +310,7 @@ export default function Layout({ user }) {
 
           <nav className="hidden md:flex items-center gap-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.18em]">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.name} to={item.path}>
+              <Link key={item.name} to={item.path} onMouseEnter={item.prefetch}>
                 <Motion.span
                   className="hover:text-white transition-colors cursor-pointer"
                   whileHover={{ y: -1 }}
@@ -361,6 +362,7 @@ export default function Layout({ user }) {
                   <Link
                     key={item.name}
                     to={item.path}
+                    onTouchStart={item.prefetch}
                     onClick={() => setMobileMenuOpen(false)}
                     className="block rounded-lg border border-white/8 bg-white/5 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-slate-200"
                   >

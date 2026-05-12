@@ -51,6 +51,50 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Auto-logout after 5 minutes of inactivity
+  useEffect(() => {
+    if (!session) return;
+
+    const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes in milliseconds
+    
+    // Initialize activity time in localStorage
+    localStorage.setItem('lastActivityTime', Date.now().toString());
+
+    let lastStorageUpdate = 0;
+    const updateActivity = () => {
+      const now = Date.now();
+      // Throttle localStorage writes to at most once per second
+      // to prevent performance lag on continuous events like mousemove/scroll
+      if (now - lastStorageUpdate > 1000) {
+        localStorage.setItem('lastActivityTime', now.toString());
+        lastStorageUpdate = now;
+      }
+    };
+
+    // Listen for user interactions
+    const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    activityEvents.forEach(event => {
+      window.addEventListener(event, updateActivity, { passive: true });
+    });
+
+    // Check periodically if inactivity limit has been reached
+    const checkInactivityInterval = setInterval(async () => {
+      const lastActivityTime = parseInt(localStorage.getItem('lastActivityTime') || Date.now().toString(), 10);
+      if (Date.now() - lastActivityTime >= INACTIVITY_LIMIT) {
+        console.log("User inactive for 5 minutes. Logging out automatically.");
+        localStorage.removeItem('lastActivityTime'); // Cleanup
+        await supabase.auth.signOut();
+      }
+    }, 10000); // check every 10 seconds
+
+    return () => {
+      clearInterval(checkInactivityInterval);
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, updateActivity);
+      });
+    };
+  }, [session]);
+
   if (session === undefined) return (
     <div className="min-h-screen flex items-center justify-center"
       style={{ background: 'linear-gradient(135deg, #020817, #050c1f)' }}>

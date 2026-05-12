@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 
@@ -60,4 +61,5 @@ export function useFeatureFlag(feature) {
   return flags[feature] ?? true;
 }
 
+ 
 export default FeatureFlagsContext;

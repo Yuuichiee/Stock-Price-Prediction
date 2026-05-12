@@ -67,18 +67,7 @@ export default function AdminConsole({ user }) {
   const [lastRefresh, setLastRefresh] = useState(null);
   const logPollRef = useRef(null);
 
-  // Guard — redirect non-admins (this is also enforced server-side in the Edge Function)
-  if (user?.email !== ADMIN_EMAIL) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-16 h-16 text-red-500/40 mx-auto mb-4" />
-          <h2 className="text-2xl font-black text-slate-400 uppercase tracking-tighter">Access Denied</h2>
-          <p className="text-slate-600 text-sm mt-2">This area is restricted to administrators.</p>
-        </div>
-      </div>
-    );
-  }
+
 
   const fetchStats = useCallback(async () => {
     setLoadingStats(true);
@@ -128,6 +117,19 @@ export default function AdminConsole({ user }) {
     logPollRef.current = setInterval(fetchLogs, 8000);
     return () => clearInterval(logPollRef.current);
   }, [fetchStats, fetchUsers, fetchLogs, fetchFlags]);
+
+  // Guard — redirect non-admins (this is also enforced server-side in the Edge Function)
+  if (user?.email !== ADMIN_EMAIL) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-red-500/40 mx-auto mb-4" />
+          <h2 className="text-2xl font-black text-slate-400 uppercase tracking-tighter">Access Denied</h2>
+          <p className="text-slate-600 text-sm mt-2">This area is restricted to administrators.</p>
+        </div>
+      </div>
+    );
+  }
 
   const toggleFlag = async (feature) => {
     const newVal = !flags[feature];
@@ -209,7 +211,7 @@ export default function AdminConsole({ user }) {
                 </button>
               </div>
               <div className="divide-y divide-white/5 max-h-72 overflow-y-auto">
-                {logs.slice(0, 8).map((log, i) => (
+                {logs.slice(0, 8).map((log) => (
                   <div key={log.id} className="px-5 py-3 flex items-center gap-3 hover:bg-white/2 transition-colors">
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-[9px] font-black text-white shrink-0">
                       {log.user_email?.[0]?.toUpperCase() || '?'}

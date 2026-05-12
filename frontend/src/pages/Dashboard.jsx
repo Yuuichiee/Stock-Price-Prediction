@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchStocks, predictStock } from '../api';
 import StockChart from '../components/StockChart';
 import { TrendingUp, Activity, BarChart2, Clock, CheckCircle2, Cpu, Zap, Layers } from 'lucide-react';
@@ -25,7 +25,7 @@ function playSuccessChime() {
       osc.start(ctx.currentTime + t);
       osc.stop(ctx.currentTime + t + 0.5);
     });
-  } catch (_) { /* AudioContext not supported */ }
+  } catch { /* AudioContext not supported */ }
 }
 
 function NetworkIcon(props) {

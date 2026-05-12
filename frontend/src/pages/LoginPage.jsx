@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabase';
-import { Globe, Mail, Lock, User, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle2, Zap, TrendingUp } from 'lucide-react';
+import { Globe, AlertCircle, CheckCircle2, Zap, TrendingUp } from 'lucide-react';
 
 const seededRandom = (seed) => {
   const value = Math.sin(seed) * 10000;
@@ -41,41 +41,10 @@ function StarField() {
 }
 
 export default function LoginPage() {
-  const [mode, setMode] = useState('login'); // 'login' | 'signup'
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [showPass, setShowPass] = useState(false);
+  const [mode] = useState('login'); // Keeping mode for animations
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: name } },
-        });
-        if (error) throw error;
-        setSuccess('Account created! Check your email to confirm, then log in.');
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        // Auth state change in App.jsx will navigate automatically
-      }
-    } catch (err) {
-      setError(err.message || 'Something went wrong.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOAuthLogin = async (provider) => {
     setLoading(true);
@@ -94,11 +63,6 @@ export default function LoginPage() {
     }
   };
 
-  const toggleMode = () => {
-    setMode(m => m === 'login' ? 'signup' : 'login');
-    setError('');
-    setSuccess('');
-  };
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center relative overflow-hidden text-white font-sans px-4 py-6 sm:py-8" style={{ perspective: '1000px' }}>
@@ -187,15 +151,7 @@ export default function LoginPage() {
                   <span>{error}</span>
                 </Motion.div>
               )}
-              {success && (
-                <Motion.div
-                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="mb-5 flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm"
-                >
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>{success}</span>
-                </Motion.div>
-              )}
+
             </AnimatePresence>
 
             {/* OAuth Buttons - Now Primary */}

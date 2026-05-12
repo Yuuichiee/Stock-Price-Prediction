@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy, startTransition } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase';
 import Layout from './components/Layout';
